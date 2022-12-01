@@ -18,18 +18,14 @@ set(0,'DefaultTextFontSize', 18)
 print_displacement = 1;
 print_pressure = 1;
 print_flux = 1;
-print_errors = 0;
+print_errors = 1;
 %% set boundary conditions. Dirichlet by default, so Neum == 1 for Neumann condition.
 Neum_ua = BC_flags(1);
 Neum_ub = BC_flags(2);
 Neum_pa = BC_flags(3);
 Neum_pb = BC_flags(4);
-%% spatial and temporal grid
-% spatial/temporal grid end points
+%% spatial and temporal domain
 [a, b, Tend] = grid(example);
-a = 0; 
-b = 1;
-Tend = 1.0;
 %% spatial grid size/ nodal/cell centered grid construction
 if (size(el_nodes,1) == 1)
     M = el_nodes;
@@ -332,15 +328,15 @@ for n = 2:1:length(t)
     end
     l2_l2_qf = sqrt( l2_l2_qf^2 + tau*( l2_err(xn,Qcc,exact_qf(xcc,t(n),example)) )^2 );
     %% l^\infty (H1) error for displacement
-%     Ucc = zeros(M,1);
-%     for j = 2:1:M
-%         Ucc(j) = (U(j) + U(j-1))/2;
-%     end
-%     dUcc = zeros(M,1);
-%     for j = 1:1:M
-%         dUcc(j) = (U(j+1) - U(j))/h(j);
-%     end
-    %linfty_H1_u = max(linfty_H1_u, sqrt( l2_err(xn,Ucc,exact_u(xcc,t(n)))^2 + l2_err(xn,dUcc,exact_du(xcc,t(n)))^2 ));
+    Ucc = zeros(M,1);
+    for j = 1:1:M
+        Ucc(j) = (U(j) + U(j+1))/2;
+    end
+    dUcc = zeros(M,1);
+    for j = 1:1:M
+        dUcc(j) = (U(j+1) - U(j))/h(j);
+    end
+    linfty_H1_u = max(linfty_H1_u, sqrt( l2_err(xn,Ucc,exact_u(xcc,t(n),example))^2 + l2_err(xn,dUcc,exact_du(xcc,t(n),example))^2 ));
     %%
     %% plot solution
     %%
@@ -349,16 +345,13 @@ for n = 2:1:length(t)
         if (print_displacement == 1)
         figure(1);
         plot(xn,exact_u(xn,t(n),example),'-k','linewidth',2,'DisplayName','Exact');
-        hold on;
-        plot(xn,U,'--*','linewidth',3,'DisplayName','Numerical');
-        hold off;
-%         hold on;
-%         plot(U,xn,'--*','linewidth',3,'DisplayName','Numerical');
-%         hold off;
-        %xlim([0 0.012]);
+        if (example == 1 || example == 2 || example == 3)
+            hold on;
+            plot(xn,U,'--*','linewidth',3,'DisplayName','Numerical');
+            hold off;
+        end
         xlim([floor(a) b]);
         xTickLocations = [floor(abs(xn(1))) (xn(1) + xn(end))/2 xn(end)];
-        %yTickLocations = [0 4 6 10];
         set(gca,'XTick', xTickLocations);
         for k = 1 : length(xTickLocations)
             xTickString{k} = xTickLocations(k);
@@ -366,9 +359,11 @@ for n = 2:1:length(t)
         set(gca,'XTickLabel', xTickString);
         xlabel('Depth x [m]');
         ylabel('Displacement u [m]');
-        %set(gca,'YDir','reverse');
-        %title(['t = ',num2str(t(n)),', M = ',num2str(M),', tau = ',num2str(tau)],'FontSize',18);
-        title(['t = ',num2str(t(n)/24),' [day] '],'FontSize',24);
+        if (example == 1 || example == 2 || example == 3)
+            title(['t = ',num2str(t(n)),', M = ',num2str(M),', tau = ',num2str(tau)],'FontSize',18);
+        elseif (example >= 4)
+            title(['t = ',num2str(t(n)/24),' [day] '],'FontSize',24);
+        end
         %% legend properties
         lh = legend;
         set(lh,'FontSize',24,'location','southeast');
@@ -381,15 +376,13 @@ for n = 2:1:length(t)
         if (print_pressure == 1)
         figure(2);
         plot(xcc,exact_p(xcc,t(n),example),'-k','linewidth',2,'DisplayName','Exact');
-        hold on;
-        plot(xcc,P,'o','linewidth',3,'MarkerSize',12,'DisplayName','Numerical');
-        hold off;
-%         hold on;
-%         plot(P,xcc,'o','linewidth',3,'MarkerSize',12,'DisplayName','Numerical');
-%         hold off;
+        if (example == 1 || example == 2 || example == 3)
+            hold on;
+            plot(xcc,P,'o','linewidth',3,'MarkerSize',12,'DisplayName','Numerical');
+            hold off;
+        end
         xlim([floor(a) b]);
         xTickLocations = [floor(abs(xn(1))) (xn(1) + xn(end))/2 xn(end)];
-        %yTickLocations = [0 4 6 10];
         set(gca,'XTick', xTickLocations);
         for k = 1 : length(xTickLocations)
             xTickString{k} = xTickLocations(k);
@@ -397,9 +390,11 @@ for n = 2:1:length(t)
         set(gca,'XTickLabel', xTickString);
         xlabel('Depth x [m]');
         ylabel('Pressure p [MPa]'); 
-        %set(gca, 'YDir','reverse')
-        %title(['t = ',num2str(t(n)),', M = ',num2str(M),', tau = ',num2str(tau)],'FontSize',18);
-        title(['t = ',num2str(t(n)/24),' [day] '],'FontSize',24);
+        if (example == 1 || example == 2 || example == 3)
+            title(['t = ',num2str(t(n)),', M = ',num2str(M),', tau = ',num2str(tau)],'FontSize',18);
+        elseif (example >= 4)
+            title(['t = ',num2str(t(n)/24),' [day] '],'FontSize',24);
+        end
         %% legend properties
         lh = legend;
         set(lh,'FontSize',24,'location','southeast');
@@ -424,7 +419,11 @@ for n = 2:1:length(t)
         set(gca,'XTickLabel', xTickString);
         xlabel('x [m]');
         ylabel('Flux q_f [m/hr]');
-        title(['t = ',num2str(t(n)),', M = ',num2str(M),', tau = ',num2str(tau)],'FontSize',18);
+        if (example == 1 || example == 2 || example == 3)
+            title(['t = ',num2str(t(n)),', M = ',num2str(M),', tau = ',num2str(tau)],'FontSize',18);
+        elseif (example >= 4)
+            title(['t = ',num2str(t(n)/24),' [day] '],'FontSize',24);
+        end
         %% legend properties
         lh = legend;
         set(lh,'FontSize',24,'location','southeast');
@@ -434,12 +433,8 @@ for n = 2:1:length(t)
         end
     %%
     end
-    %% print values
-%     fprintf('Flux q_f at x = 0: %0.5g',Q(1));
-%     fprintf(', ');
-%     fprintf('Pressure p at x = h/2: %0.5g',P(1));
-%     fprintf('\r');
-end
+%%
+end % time loop ends
 %% plot total settlement
 if (example >= 4)
     figure(4);
@@ -481,7 +476,7 @@ end
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
 %%
-%% GRID
+%% SPATIAL AND TEMPORAL DOMAIN
 %%
 %%
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -496,6 +491,7 @@ elseif (example == 4)
     b = 1;
     Tend = 1;
 else
+    % custom values for a custom example
     a = 0;
     b = 1;
     Tend = 1;
