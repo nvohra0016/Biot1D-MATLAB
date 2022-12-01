@@ -6,21 +6,18 @@
 % from x = a and including x = b, i.e., size(M) = #cells + 1. 
 %% tsteps (scalar): 
 % number of time steps; this determines the time step size tau.
-%% BC_flags (4x1 vector):
+%% BC_flags (4x1 veco:
 % boundary condition flags 1x4 vector with values 0 (for Dirichlet) or 1 (for Neumann)
 % boundary conditions [M M H H] 
 % For example: [1 0 0 1] = [N D D N] for Terzaghi's problem.
 % [0 0 0 1] = [D D D N] corresponds to Dirichlet for mechanical and mixed for flow.
-%% example (integer):
+%% example:
 % parameter that controls the default coded examples.
 % example = 1, 2, or 3 corresponds to manufactured solutions
 % example = 4 corresponds to Terzaghi's problem of soil consolidation
 % using physical parameters.
 % example >= 5 are custom examples need to be set up by user (i.e., provide
 % spatial domain, time period, and physical parameters)
-%%
-%%
-%%
 function [xn, xcc, t, U, P, Q] = BiotHHMM(el_nodes, ntsteps, BC_flags, example)
 tic
 %% set default plot values
