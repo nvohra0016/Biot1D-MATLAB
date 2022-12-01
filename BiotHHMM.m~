@@ -57,7 +57,7 @@ end
 %% time step size and temporal grid
 tau = (Tend-0)/ntsteps;
 t = 0:tau:Tend;
-t = t(:);
+t = t';
 %% physical parameters
 [lambda, mu, alpha, kappa, viscosity, betaf, phi, rhof, rhos, G] = physical_parameters(xcc, example);
 %%
@@ -175,7 +175,7 @@ tNa = -(lambda(1)+2*mu(1))*exact_du(a,t,example) + alpha*exact_p(a,t,example); %
 tNb = (lambda(M)+2*mu(M))*exact_du(b,t,example) - alpha*exact_p(b,t,example); % after taking product with normal i.e. = \sigma_total \cdot n
 %% for example == 4 onwards (physical problem; external stress)
 if (example >= 4)
-    tNa = 0.1 + 0*t;
+    tNa = tNa_mag * ones(length(t),1);
 end
 %% eliminate nodes
 if (Neum_ua == 0 && Neum_ub == 0)
@@ -547,6 +547,12 @@ else
     E = E_clay;
     nu = nu_clay;
     %
+    E_vec = E*ones(M,1);
+    nu_vec = nu*ones(M,1);
+    kappa_vec = kappa*ones(M,1);
+    
+    
+    %
 %     for j = 1:1:M
 %         if ( (xcc(j) > 0) && (xcc(j) < 6))
 %             E_vec(j) = E_silt*1 + 0*400;
@@ -564,9 +570,7 @@ else
 %     end
     %
     %%
-    E = E_clay + 0*xcc;
-    nu = nu_clay + 0*xcc;
-    lambda = (E.*nu)./((1 + nu).*(1-2*nu));
+    lambda = (E.*nu)./((1 + nu)*(1-2*nu));
     mu = E./(2*(1+nu));
     phi = phi_clay + 0*xcc;
     kappa = kappa_clay + 0*xcc;
@@ -619,7 +623,7 @@ elseif (example == 3)
     y = -1 + 0*x + 0*t;
 %% 4.
 else
-    [lambda, mu, alpha, kappa, viscosity, betaf, phi, rhof, rhos, G] = physical_parameters(x, example);
+    [lambda, mu, alpha, kappa, viscosity, betaf, phi, rhof, rhos, G] = physical_parameters(x, example_number);
     y =  -(1/(lambda(1) + 2*mu(1))) + 0*x + 0*t; 
 end
 end
