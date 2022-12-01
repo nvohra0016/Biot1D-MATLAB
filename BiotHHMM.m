@@ -14,11 +14,6 @@ set(groot,'defaultLineLineWidth',4)
 set(0,'DefaultaxesLineWidth', 3)
 set(0,'DefaultaxesFontSize', 24)
 set(0,'DefaultTextFontSize', 18)
-%% controls to toggle plots
-print_displacement = 1;
-print_pressure = 1;
-print_flux = 1;
-print_errors = 1;
 %% set boundary conditions. Dirichlet by default, so Neum == 1 for Neumann condition.
 Neum_ua = BC_flags(1);
 Neum_ub = BC_flags(2);
@@ -30,10 +25,10 @@ Neum_pb = BC_flags(4);
 if (size(el_nodes,1) == 1)
     M = el_nodes;
     h = (b-a)/M * ones(M,1);
-    % nodal grid
+    %% nodal grid
     xn = a:h:b;
     xn = xn';
-    % cell centered grid
+    %% cell centered grid
     xcc = a+(h/2):h:b;
     xcc = xcc';
 else
@@ -42,9 +37,9 @@ else
     for j = 1:1:M
         h(j) = el_nodes(j+1)-el_nodes(j);
     end
-    % nodal grid
+    %% nodal grid
     xn = el_nodes;
-    % cell centered grid
+    %% cell centered grid
     xcc = zeros(M,1);
     for j = 1:1:M
         xcc(j) = (el_nodes(j) + el_nodes(j+1))/2;
@@ -85,56 +80,16 @@ end
 Aup = Apu';
 %% transmissibilities
 T = zeros(M+1,1);
-% using variable kappa
-% for j = 2:1:M
-%     T(j) = (h*(viscosity/kappa(j)))^(-1);
-% end
-% T(1) =  ((h/2)*(viscosity/kappa(j)))^(-1);
-% T(M+1) =  ((h/2)*(viscosity/kappa(j)))^(-1);
-% using constant kappa
 for j = 2:1:M
     T(j) = ( (h(j-1)/2)*(kappa(j-1)/viscosity)^(-1) + (h(j)/2)*(kappa(j)/viscosity)^(-1) )^(-1);
 end
 T(1) =  ( (h(1)/2)*(kappa(1)/viscosity)^(-1) )^(-1);
 T(M+1) =  ( (h(M)/2)*(kappa(M)/viscosity)^(-1) )^(-1);
-%% flux mass matrix using trapezoidal rule
-% Mqfqf = sparse(M+1,M+1);
-% for j = 2:1:M
-%     Mqfqf(j,j) = (h/2)*(kappa/viscosity)^(-1) + (h/2)*(kappa/viscosity)^(-1);
-% end
-% Mqfqf(1,1) = (h/2)*(kappa/viscosity)^(-1);
-% Mqfqf(M+1,M+1) = (h/2)*(kappa/viscosity)^(-1);
-
-% this is same as above i.e. trapezoidal rule
-MqfqfCCFD = sparse(M+1,M+1);
+%% flux mass matrix using transmissibilities (trapezoidal rule)
+Mqfqf = sparse(M+1,M+1);
 for j = 1:1:M+1
-    MqfqfCCFD(j,j) = T(j)^(-1);
+    Mqfqf(j,j) = T(j)^(-1);
 end
-%% flux mass matrix using exact integration
-MqfqfSP = sparse(M+1,M+1);
-for j =2:1:M
-    MqfqfSP(j,j) = (h(j-1)/3) * ( (viscosity/kappa(j-1))) + (h(j)/3) * ( (viscosity/kappa(j)) );
-    MqfqfSP(j,j+1) = (h(j)/6) * ( (viscosity/kappa(j)) );
-    MqfqfSP(j,j-1) = (h(j-1)/6) * ( (viscosity/kappa(j-1)) );
-end
-MqfqfSP(1,1) = (h(1)/3) * ((viscosity/kappa(1))); MqfqfSP(1,2) = (h(1)/6) * ( (viscosity/kappa(1)) );
-MqfqfSP(M+1,M) = (h(M)/6) * ( (viscosity/kappa(M)) ); MqfqfSP(M+1,M+1) = (h(M)/3) * ( (viscosity/kappa(M)) );
-%% choose SP or CCFD
-%Mqfqf = MqfqfSP;
-Mqfqf = MqfqfCCFD;
-%% calculate Mqfqf CCFD inverse while checking if permeability is 0
-Mqfqfinv = sparse(M+1,M+1);
-for j = 2:1:M
-    if (abs(kappa(j)) > 1.e-20 && abs(kappa(j-1)) > 1.e-20)
-        Mqfqfinv(j,j) = (1/viscosity) * 2*kappa(j-1) * kappa(j) / (kappa(j) * h(j-1) + kappa(j-1) * h(j));
-    else
-        Mqfqfinv(j,j) = 0;
-    end
-end
-Mqfqfinv(1,1) = (2/h(1)) * (kappa(1)/viscosity);
-Mqfqfinv(M+1,M+1) = (2/h(M)) * (kappa(M)/viscosity);
-%%
-%Mqfqfinv = inv(Mqfqf);
 %% pressure-flux stiffness matrix
 Apqf = sparse(M+1,M);
 for j = 2:1:M
@@ -213,8 +168,7 @@ Apqf = Apqf(free_nodes_qf,:);
 Aqfp = Apqf';
 G_vec_H = G_vec_H(free_nodes_qf);
 %% block matrix
-%A = [Auu -alpha*Apu; -alpha*Aup -Mpp - tau*Aqfp*(Mqfqf \Apqf)];
-A = [Auu -alpha*Apu; -alpha*Aup -Mpp - tau*Aqfp*(Mqfqfinv * Apqf)];
+A = [Auu -alpha*Apu; -alpha*Aup -Mpp - tau*Aqfp*(Mqfqf \Apqf)];
 %% matrices to analyse
 %%
 %% initial conditions
@@ -228,6 +182,15 @@ settlement = zeros(length(t),1);
 linfty_l2_p = 0;
 l2_l2_qf = 0;
 linfty_H1_u = 0;
+%% controls to toggle plotting and print errors
+print_displacement = 1;
+print_pressure = 1;
+print_flux = 1;
+if (example == 1 || example == 2 || example == 3)
+    print_errors = 1;
+elseif (example >= 4)
+    print_errors = 0;
+end
 %%
 %% time loop
 %%
@@ -314,29 +277,32 @@ for n = 2:1:length(t)
     %% store settlement value
     settlement(n) = U(1);
     %%
-    %% compute error
+    %% compute error (for example == 1, 2, or 3)
     %%
-    %% l^\infty (l^2) error for pressure
-    if (l2_err(xn,P,exact_p(xcc,t(n),example)) > linfty_l2_p)
-      linfty_l2_p = max(linfty_l2_p,l2_err(xn,P,exact_p(xcc,t(n),example)));
-      p_err_time = t(n);
+    if (print_errors == 1)
+        %% l^\infty (l^2) error for pressure
+        if (l2_err(xn,P,exact_p(xcc,t(n),example)) > linfty_l2_p)
+            linfty_l2_p = max(linfty_l2_p,l2_err(xn,P,exact_p(xcc,t(n),example)));
+            p_err_time = t(n);
+        end
+        %% l^2(l^2) error for flux
+        Qcc = zeros(M,1);
+        for j = 1:1:M
+            Qcc(j) = (Q(j) + Q(j+1))/2;
+        end
+        l2_l2_qf = sqrt( l2_l2_qf^2 + tau*( l2_err(xn,Qcc,exact_qf(xcc,t(n),example)) )^2 );
+        %% l^\infty (H1) error for displacement
+        Ucc = zeros(M,1);
+        for j = 1:1:M
+            Ucc(j) = (U(j) + U(j+1))/2;
+        end
+        dUcc = zeros(M,1);
+        for j = 1:1:M
+            dUcc(j) = (U(j+1) - U(j))/h(j);
+        end
+        linfty_H1_u = max(linfty_H1_u, sqrt( l2_err(xn,Ucc,exact_u(xcc,t(n),example))^2 + l2_err(xn,dUcc,exact_du(xcc,t(n),example))^2 ));
+        %%
     end
-    %% l^2(l^2) error for flux
-    Qcc = zeros(M,1);
-    for j = 1:1:M
-        Qcc(j) = (Q(j) + Q(j+1))/2;
-    end
-    l2_l2_qf = sqrt( l2_l2_qf^2 + tau*( l2_err(xn,Qcc,exact_qf(xcc,t(n),example)) )^2 );
-    %% l^\infty (H1) error for displacement
-    Ucc = zeros(M,1);
-    for j = 1:1:M
-        Ucc(j) = (U(j) + U(j+1))/2;
-    end
-    dUcc = zeros(M,1);
-    for j = 1:1:M
-        dUcc(j) = (U(j+1) - U(j))/h(j);
-    end
-    linfty_H1_u = max(linfty_H1_u, sqrt( l2_err(xn,Ucc,exact_u(xcc,t(n),example))^2 + l2_err(xn,dUcc,exact_du(xcc,t(n),example))^2 ));
     %%
     %% plot solution
     %%
@@ -477,7 +443,7 @@ end
 %%
 %%
 %% SPATIAL AND TEMPORAL DOMAIN
-%%
+%% units: domain [m], time [hr]
 %%
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [a, b, Tend] = grid(example)
@@ -502,7 +468,7 @@ end
 %%
 %%
 %% PHYSICAL PARAMETERS
-%%
+%% units: [m], [hr], [MPa]
 %%
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [lambda, mu, alpha, kappa, viscosity, betaf, phi, rhof, rhos, G] = physical_parameters(xcc, example_number)
