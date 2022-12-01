@@ -1,4 +1,4 @@
-% Started on 5th April 2022. Biot 3 field formulation using different
+% Biot 3 field formulation using different
 % boundary conditions [MM;HH]. For example, [DN;ND] for Terzaghi's problem.
 % Using non-uniform cell sizes.
 % Using heterogeneous permeabilities.
@@ -7,13 +7,14 @@
 % created. If it is a vector, then it contains the element nodes as a column vector (nodal grid), starting
 % from x = a and including x = b, i.e., size(M) = #cells + 1. 
 % tau: time step size.
-function [xn, xcc, t, U, P, Q, linfty_H1_u, linfty_l2_p, l2_l2_qf, A, settlement] = BiotHHMM_1(el_nodes, ntsteps, BC_flags, example)
+function [xn, xcc, t, U, P, Q] = BiotHHMM(el_nodes, ntsteps, BC_flags, example)
 tic
 %% set default plot values
 set(groot,'defaultLineLineWidth',4)
 set(0,'DefaultaxesLineWidth', 3)
 set(0,'DefaultaxesFontSize', 24)
 set(0,'DefaultTextFontSize', 18)
+%% controls to toggle plots
 print_displacement = 1;
 print_pressure = 1;
 print_flux = 1;
