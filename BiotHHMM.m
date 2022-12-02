@@ -163,9 +163,6 @@ Pb = exact_p(b,t,example);
 qfa = exact_qf(a,t,example) * -1; % inner product with outward normal
 qfb = exact_qf(b,t,example) * 1;
 %
-qfa_bdry = Mqfqf(2,1);
-qfb_bdry = Mqfqf(M,M+1);
-%
 if (Neum_pa == 0 && Neum_pb == 0)
     free_nodes_qf = 1:1:M+1;
 elseif (Neum_pa == 0 && Neum_pb == 1)
@@ -177,7 +174,6 @@ else
 end
 %% eliminate nodes from flux matrix
 Mqfqf = Mqfqf(free_nodes_qf, free_nodes_qf);
-Mqfqfinv = Mqfqfinv(free_nodes_qf, free_nodes_qf);
 Apqf = Apqf(free_nodes_qf,:);
 Aqfp = Apqf';
 G_vec_H = G_vec_H(free_nodes_qf);
@@ -221,7 +217,6 @@ for n = 2:1:length(t)
     rhs_f_vector(M+1) = (h(M)/2)*rhs_f_val(M+1);
     %% eliminate boundary nodes
     rhs_f_vector = rhs_f_vector(free_nodes_u);
-    %rhs_f_vector = l2_prod_f(a,b,M,tau,t(n));
     %% displacement boundary contribution (Neumann and Dirichlet)
     rhs_f_vector(1) = rhs_f_vector(1) + (1-Neum_ua)*(1/h(1))*(lambda(1)+2*mu(1))*Ua(n) + Neum_ua*tNa(n);
     rhs_f_vector(end) = rhs_f_vector(end) + (1-Neum_ub)*(1/h(M))*(lambda(M)+2*mu(M))*Ub(n) + Neum_ub*tNb(n);
@@ -235,7 +230,6 @@ for n = 2:1:length(t)
     for j = 1:1:M
         rhs_h_vector(j) = h(j)*rhs_h_val(j);
     end
-    %rhs_h_vector = l2_prod_h(a,b,M,tau,t(n));
     %% previous time step contribution
     rhs_h_vector = tau*rhs_h_vector + h .* previous_etaf;
     %% displacement boundary contribution
@@ -246,12 +240,7 @@ for n = 2:1:length(t)
     pressure_boundary(1) = (1-Neum_pa)*Pa(n);
     pressure_boundary(end) = -(1-Neum_pb)*Pb(n);
     %
-    % this is primarily for SP formulation
-    flux_boundary = zeros(length(free_nodes_qf),1); 
-    flux_boundary(1) = -Neum_pa * qfa_bdry * (-qfa(n)); % qfa is flux \cdot n i.e. -qfa is the boundary value 
-    flux_boundary(end) = -Neum_pb * qfb_bdry * qfb(n);
-    %
-    rhs_h_vector = rhs_h_vector - tau*Aqfp*(Mqfqf \(pressure_boundary + flux_boundary + G_vec_H) );
+    rhs_h_vector = rhs_h_vector - tau*Aqfp*(Mqfqf \(pressure_boundary + G_vec_H) );
     %% flux Dirichlet boundary condition from COM equation \nabla q_f \cdot \eta_i
     rhs_h_vector(1) = rhs_h_vector(1) - Neum_pa * tau * qfa(n);
     rhs_h_vector(end) = rhs_h_vector(end) - Neum_pb * tau * qfb(n);
@@ -263,7 +252,6 @@ for n = 2:1:length(t)
     %% compute solution at current time step
     %%
     UP = A \ rhs_vector;
-    %UP = inv(A) * rhs_vector;
     %%
     %% extract solution 
     %%
@@ -271,8 +259,7 @@ for n = 2:1:length(t)
     previous_U = U;
     P = UP(length(free_nodes_u)+1:end);
     previous_P = P;
-    %Q = Mqfqf \ (Apqf*P + pressure_boundary + flux_boundary + G_vec_H);
-    Q = Mqfqfinv * (Apqf*P + pressure_boundary + flux_boundary + G_vec_H);
+    Q = Mqfqf \ (Apqf*P + pressure_boundary + G_vec_H);
     %% add Dirichlet boundary conditions to displacement vector
     U_BC = [Ua(n); zeros(M-1,1); Ub(n)];
     U_BC(free_nodes_u) = U;
@@ -288,7 +275,7 @@ for n = 2:1:length(t)
         etaf(j) = etaf(j) + alpha * (U(j+1) - U(j))/h(j);
     end
     previous_etaf = etaf;
-    %% store settlement value
+    %% store settlement value (for Terzaghi's problem)
     settlement(n) = U(1);
     %%
     %% compute error (for example == 1, 2, or 3)
@@ -324,10 +311,10 @@ for n = 2:1:length(t)
         %% plot displacement
         if (print_displacement == 1)
         figure(1);
-        plot(xn,exact_u(xn,t(n),example),'-k','linewidth',2,'DisplayName','Exact');
+        plot(xn,U,'--*','linewidth',3,'DisplayName','Numerical');
         if (example == 1 || example == 2 || example == 3)
             hold on;
-            plot(xn,U,'--*','linewidth',3,'DisplayName','Numerical');
+            plot(xn,exact_u(xn,t(n),example),'-k','linewidth',2,'DisplayName','Exact');
             hold off;
         end
         xlim([floor(a) b]);
@@ -342,7 +329,7 @@ for n = 2:1:length(t)
         if (example == 1 || example == 2 || example == 3)
             title(['t = ',num2str(t(n)),', M = ',num2str(M),', tau = ',num2str(tau)],'FontSize',18);
         elseif (example >= 4)
-            title(['t = ',num2str(t(n)/24),' [day] '],'FontSize',24);
+            title(['t = ',num2str(t(n)/24),' [day] '],'FontSize',18);
         end
         %% legend properties
         lh = legend;
@@ -355,10 +342,10 @@ for n = 2:1:length(t)
         %% plot pressure
         if (print_pressure == 1)
         figure(2);
-        plot(xcc,exact_p(xcc,t(n),example),'-k','linewidth',2,'DisplayName','Exact');
+        plot(xcc,P,'o','linewidth',3,'MarkerSize',12,'DisplayName','Numerical');
         if (example == 1 || example == 2 || example == 3)
             hold on;
-            plot(xcc,P,'o','linewidth',3,'MarkerSize',12,'DisplayName','Numerical');
+            plot(xcc,exact_p(xcc,t(n),example),'-k','linewidth',2,'DisplayName','Exact');
             hold off;
         end
         xlim([floor(a) b]);
@@ -373,7 +360,7 @@ for n = 2:1:length(t)
         if (example == 1 || example == 2 || example == 3)
             title(['t = ',num2str(t(n)),', M = ',num2str(M),', tau = ',num2str(tau)],'FontSize',18);
         elseif (example >= 4)
-            title(['t = ',num2str(t(n)/24),' [day] '],'FontSize',24);
+            title(['t = ',num2str(t(n)/24),' [day] '],'FontSize',18);
         end
         %% legend properties
         lh = legend;
@@ -386,10 +373,12 @@ for n = 2:1:length(t)
         %% plot flux 
         if (print_flux == 1)
         figure(3);
-        plot(xn,exact_qf(xn,t(n),example),'-k','linewidth',2,'DisplayName','Exact');
-        hold on;
         plot(xn,Q,':*','linewidth',3,'DisplayName','Numerical');
-        hold off;
+        if (example == 1 || example == 2 || example == 3)
+            hold on;
+            plot(xn,exact_qf(xn,t(n),example),'-k','linewidth',2,'DisplayName','Exact');
+            hold off;
+        end
         xlim([floor(a) b]);
         xTickLocations = [floor(abs(xn(1))) (xn(1) + xn(end))/2 xn(end)];
         set(gca,'XTick', xTickLocations);
@@ -402,7 +391,7 @@ for n = 2:1:length(t)
         if (example == 1 || example == 2 || example == 3)
             title(['t = ',num2str(t(n)),', M = ',num2str(M),', tau = ',num2str(tau)],'FontSize',18);
         elseif (example >= 4)
-            title(['t = ',num2str(t(n)/24),' [day] '],'FontSize',24);
+            title(['t = ',num2str(t(n)/24),' [day] '],'FontSize',18);
         end
         %% legend properties
         lh = legend;
@@ -419,7 +408,7 @@ end % time loop ends
 if (example >= 4)
     figure(4);
     hold on;
-    plot(t,settlement,'-','linewidth',2,'DisplayName','With gravity');
+    plot(t,settlement,'-','linewidth',2);
     hold off;
     xlim([0 Tend]);
     xTickLocations = [0 (0 + Tend)/(2) Tend];
@@ -432,6 +421,9 @@ if (example >= 4)
     ylabel('Settlement [m]');
     title(['M = ',num2str(M),', tau = ',num2str(tau)],'FontSize',18);
     box off;
+    %% display maximum settlemen
+    format long
+    settlement(end)
 end
 %%
 %% print errors
@@ -445,13 +437,16 @@ if (print_errors == 1)
     fprintf('\r');
     fprintf('l_infty(H1) error displacement u: %0.5g',linfty_H1_u);
     fprintf('\r');
-else
-    linfty_H1_u = 0;
-    linfty_l2_p = 0;
-    l2_l2_qf = 0;
 end
 %%
 toc
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%%
+%% MAIN FUNCTION ENDS
+%%
+%%
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
@@ -468,8 +463,8 @@ if (example == 1 || example == 2 || example == 3)
     Tend = 1;
 elseif (example == 4)
     a = 0;
-    b = 1;
-    Tend = 1;
+    b = 0.1;
+    Tend = 24;
 else
     % custom values for a custom example
     a = 0;
@@ -485,9 +480,9 @@ end
 %% units: [m], [hr], [MPa]
 %%
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [lambda, mu, alpha, kappa, viscosity, betaf, phi, rhof, rhos, G] = physical_parameters(xcc, example_number)
+function [lambda, mu, alpha, kappa, viscosity, betaf, phi, rhof, rhos, G] = physical_parameters(xcc, example)
 %%
-if (example_number == 1 || example_number == 2 || example_number == 3)
+if (example == 1 || example == 2 || example == 3)
     lambda = 1 + 0*xcc;
     mu = 1 + 0*xcc;
     kappa = 1 + 0*xcc;
@@ -499,6 +494,19 @@ if (example_number == 1 || example_number == 2 || example_number == 3)
     rhos = 1;
     G = 0.0;
     %
+elseif (example == 4)    
+    E = 20;
+    nu = 0.30;
+    lambda = (E.*nu)./((1 + nu).*(1-2*nu)) + 0*xcc;
+    mu = E./(2*(1+nu)) + 0*xcc;
+    kappa = 1e-17 + 0*xcc;
+    phi = 0.50 + 0*xcc;
+    viscosity = 2.7822e-13;
+    alpha = 1;
+    betaf = 4.16e-4;
+    rhof = 998.21 * (1e-6 * (1/3600)*(1/3600)); 
+    rhos = 2700 * (1/3600) * (1/3600) * 1e-6;
+    G = 1.27290528e8 * 1; % [m / hr^2]
 else
     %% sand
     E_sand = 15;
@@ -581,6 +589,7 @@ elseif (example == 3)
 else
     y = 0*x + 0*t;
 end
+%%
 end
 %% exact solution displacement derivative
 function y = exact_du(x,t,example)
@@ -598,6 +607,7 @@ else
     [lambda, mu, alpha, kappa, viscosity, betaf, phi, rhof, rhos, G] = physical_parameters(x, example);
     y =  -(1/(lambda(1) + 2*mu(1))) + 0*x + 0*t; 
 end
+%%
 end
 %% exact solution pressure
 function y = exact_p(x,t,example)
@@ -614,6 +624,7 @@ elseif (example == 3)
 else
     y = 0*x + 0*t;
 end
+%%
 end
 %% exact solution flux
 function y = exact_qf(x,t,example)
@@ -630,6 +641,7 @@ elseif (example == 3)
 else
     y = 0*x + 0*t;
 end
+%%
 end
 %% fluid content function
 function y = initial_fluid_content(x,t,example)
@@ -637,7 +649,6 @@ function y = initial_fluid_content(x,t,example)
 [lambda, mu, alpha, kappa, viscosity, betaf, phi, rhof, rhos, G] = physical_parameters(x, example);
 %% 1., 2., 3.
 if (example == 1 || example == 2 || example == 3)
-    
     y = alpha*exact_du(x,t,example) + betaf * phi .* exact_p(x,t,example);
 %% 4.
 else
