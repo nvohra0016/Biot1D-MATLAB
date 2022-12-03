@@ -1,4 +1,4 @@
-%% Biot 3 field poroelasticity solver
+%% Biot 3 field poroelasticity solver (see pdf for full documentation)
 %% Input:
 %% el_nodes (scalar or vector): 
 % if scalar then it is the number of cells and a uniform spatial grid is
@@ -16,8 +16,10 @@
 % example = 1, 2, or 3 corresponds to manufactured solutions
 % example = 4 corresponds to Terzaghi's problem of soil consolidation
 % using physical parameters.
-% example >= 5 are custom examples need to be set up by user (i.e., provide
-% spatial domain, time period, and physical parameters)
+% example = 5 corresponds to Terzaghi's problem with 2 different soil
+% types.
+% example >= 6 are custom examples need to be set up by user (i.e., provide
+% spatial domain, time period, and physical parameters).
 %%
 %%
 %%
@@ -465,6 +467,10 @@ elseif (example == 4)
     a = 0;
     b = 0.1;
     Tend = 24;
+elseif (example == 5)
+    a = 0;
+    b = 1;
+    Tend = 8760;
 else
     % custom values for a custom example
     a = 0;
@@ -491,7 +497,7 @@ if (example == 1 || example == 2 || example == 3)
     alpha = 1;
     betaf = 1;
     rhof = 1;
-    rhos = 1;
+    rhos = 1 + 0*xcc;
     G = 0.0;
     %
 elseif (example == 4)    
@@ -505,7 +511,37 @@ elseif (example == 4)
     alpha = 1;
     betaf = 4.16e-4;
     rhof = 998.21 * (1e-6 * (1/3600)*(1/3600)); 
-    rhos = 2700 * (1/3600) * (1/3600) * 1e-6;
+    rhos = 2700 * (1/3600) * (1/3600) * 1e-6 + 0*xcc;
+    G = 1.27290528e8 * 1; % [m / hr^2]
+elseif (example == 5)
+    lambda = 0*xcc;
+    mu = 0*xcc;
+    kappa = 0*xcc;
+    phi = 0*xcc;
+    rhos = 0*xcc;
+    for j = 1:1:length(xcc)
+        if (xcc(j) <= 0.5)
+            E = 15;
+            nu = 0.25;
+            lambda(j) = (E*nu)/((1 + nu)*(1-2*nu));
+            mu(j) = E/(2*(1+nu));
+            kappa(j) = 1e-12;
+            phi(j) = 0.30;
+            rhos(j) = 2650 * (1/3600) * (1/3600) * 1e-6;
+        else
+            E = 20;
+            nu = 0.30;
+            lambda(j) = (E*nu)/((1 + nu)*(1-2*nu));
+            mu(j) = E/(2*(1+nu));
+            kappa(j) = 1e-17;
+            phi(j) = 0.50;
+            rhos(j) = 2700 * (1/3600) * (1/3600) * 1e-6;
+        end
+    end
+    viscosity = 2.7822e-13;
+    alpha = 1;
+    betaf = 4.16e-4;
+    rhof = 998.21 * (1e-6 * (1/3600)*(1/3600)); 
     G = 1.27290528e8 * 1; % [m / hr^2]
 else
     %% sand
