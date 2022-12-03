@@ -14,7 +14,7 @@ To run example 4:
 
 ``` [xn, xcc, t, U, P, Q] = BiotHHMM(100, 10, [1 0 0 1], 4); ```
 
-More examples can be found in the pdf (coming soon).
+More examples and the complete documentation can be found in the [pdf]().
 
 ## Physical parameters:
 
@@ -45,7 +45,7 @@ We use the [GNU GPL](https://www.gnu.org/licenses/licenses.en.html#GPL) license 
 
 We ask that you respect the [Creative Commons CC BY-NC-ND 4.0 Attribution-NonCommercial-NoDerivatives 4.0 International license](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode).
 
-See License.md for the full text (coming soon).
+See License.md for the full text.
 
 
 

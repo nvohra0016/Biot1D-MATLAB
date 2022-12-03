@@ -499,7 +499,6 @@ if (example == 1 || example == 2 || example == 3)
     rhof = 1;
     rhos = 1 + 0*xcc;
     G = 0.0;
-    %
 elseif (example == 4)    
     E = 20;
     nu = 0.30;
@@ -512,7 +511,7 @@ elseif (example == 4)
     betaf = 4.16e-4;
     rhof = 998.21 * (1e-6 * (1/3600)*(1/3600)); 
     rhos = 2700 * (1/3600) * (1/3600) * 1e-6 + 0*xcc;
-    G = 1.27290528e8 * 1; % [m / hr^2]
+    G = 1.27290528e8 * 1; 
 elseif (example == 5)
     lambda = 0*xcc;
     mu = 0*xcc;
@@ -544,62 +543,17 @@ elseif (example == 5)
     rhof = 998.21 * (1e-6 * (1/3600)*(1/3600)); 
     G = 1.27290528e8 * 1; % [m / hr^2]
 else
-    %% sand
-    E_sand = 15;
-    nu_sand = 0.25;
-    kappa_sand = 1e-12;
-    phi_sand = 0.30;
-    rhos_sand = 2650 * (1/3600) * (1/3600) * 1e-6; 
-    %% clay
-    E_clay = 20;
-    nu_clay = 0.30;
-    kappa_clay = 1e-17;
-    phi_clay = 0.50;
-    rhos_clay = 2700 * (1/3600) * (1/3600) * 1e-6;
-    %% silt
-    E_silt = 10;
-    nu_silt = 0.35;
-    kappa_silt = 1e-14;
-    phi_silt = 0.45;
-    rhos_silt = 2700 * (1/3600) * (1/3600) * 1e-6;
-    %% heterogeneous E, nu/ choose soil
-    %
-    E = E_clay;
-    nu = nu_clay;
-    %
-%     for j = 1:1:M
-%         if ( (xcc(j) > 0) && (xcc(j) < 6))
-%             E_vec(j) = E_silt*1 + 0*400;
-%             nu_vec(j) = nu_silt;
-%             phi(j) = phi_silt;
-%             kappa_vec(j) = kappa_silt;
-%             rhos(j) = rhos_silt;
-%         else
-%             E_vec(j) = E_clay*1000;
-%             nu_vec(j) = nu_clay;
-%             phi(j) = phi_clay;
-%             kappa_vec(j) = kappa_clay;
-%             rhos(j) = rhos_clay;
-%         end
-%     end
-    %
-    %%
-    E = E_clay + 0*xcc;
-    nu = nu_clay + 0*xcc;
-    lambda = (E.*nu)./((1 + nu).*(1-2*nu));
-    mu = E./(2*(1+nu));
-    phi = phi_clay + 0*xcc;
-    kappa = kappa_clay + 0*xcc;
+    %% custom scenario
+    lambda = 1 + 0*xcc;
+    mu = 1 + 0*xcc;
+    kappa = 1 + 0*xcc;
+    phi = 1 + 0*xcc;
+    viscosity = 1;
     alpha = 1;
-    %viscosity = 1.0016e-9 * (1/3600);
-    viscosity = 2.7822e-13;
-    betaf = 4.16e-4;
-    rhof = 998.21 * (1e-6 * (1/3600)*(1/3600)); % [kg/ m^3] to [MPa hr^2 / m^2]
-    rhos = rhos_clay;
-    %
-    G = 1.27290528e8 * 0; % [m / hr^2]
-    %
-    tNa_mag = 1e0 * 1;
+    betaf = 1;
+    rhof = 1;
+    rhos = 1 + 0*xcc;
+    G = 0.0;
 end
 %%
 end
