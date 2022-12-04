@@ -5,7 +5,7 @@
 % You should have received a copy of the GNU General Public License along with Biot1D-MATLAB. If not, see <https://www.gnu.org/licenses/>.
 % The full text of the license can be found in the file License.md.
 %%
-%% Biot 3 field poroelasticity solver (see documentation for full implementation details)
+%% Biot 3 field poroelasticity solver (see Documentation pdf for full implementation details)
 %% Input:
 %% el_nodes (scalar or vector): 
 % if scalar then it is the number of cells and a uniform spatial grid is
