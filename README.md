@@ -37,7 +37,7 @@ More examples and the complete documentation can be found in the [Documentation]
 
 ## Acknowledgement 
 
-This research was partially supported by NSF DMS-1912938 "Modeling with Constraints and Phase Transitions in Porous Media" and NSF DMS-1522734 ``Phase transitions in porous media across multiple scales"; PI: Dr. Malgorzata Peszynska. 
+This research was partially supported by NSF DMS-1912938 "Modeling with Constraints and Phase Transitions in Porous Media" and NSF DMS-1522734 "Phase transitions in porous media across multiple scales"; PI: Dr. Malgorzata Peszynska. 
 
 ## License
 
