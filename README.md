@@ -14,7 +14,7 @@ To run example 4:
 
 ``` [xn, xcc, t, U, P, Q] = Biot1D(20, 100, [1 0 0 1], 4); ```
 
-More examples and the complete documentation can be found in the [Documentation]().
+More examples and the complete documentation can be found in the [Documentation](https://github.com/nvohra0016/Biot1D-MATLAB/blob/452e0725a63db48f469df6ea6edb58c15e7215f8/Documentation.pdf).
 
 ## Physical parameters:
 
