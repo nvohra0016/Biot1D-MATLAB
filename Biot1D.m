@@ -30,7 +30,7 @@
 %%
 %%
 %%
-function [xn, xcc, t, U, P, Q] = BiotHHMM(el_nodes, ntsteps, BC_flags, example)
+function [xn, xcc, t, U, P, Q, settlement] = Biot1D(el_nodes, ntsteps, BC_flags, example)
 tic
 %% set default plot values
 set(groot,'defaultLineLineWidth',4)
@@ -61,7 +61,7 @@ else
         h(j) = el_nodes(j+1)-el_nodes(j);
     end
     %% nodal grid
-    xn = el_nodes;
+    xn = el_nodes(:);
     %% cell centered grid
     xcc = zeros(M,1);
     for j = 1:1:M
@@ -188,7 +188,6 @@ Aqfp = Apqf';
 G_vec_H = G_vec_H(free_nodes_qf);
 %% block matrix
 A = [Auu -alpha*Apu; -alpha*Aup -Mpp - tau*Aqfp*(Mqfqf \Apqf)];
-%% matrices to analyse
 %%
 %% initial conditions
 %%
@@ -316,16 +315,16 @@ for n = 2:1:length(t)
     %%
     %% plot solution
     %%
-    if (abs(n - length(t)) < 1e-6 || abs(n - floor(length(t)/2) ) < 1e-6 || abs(n - 2) < 1e-6)
+    if (abs(n - length(t)) < 1e-6)
         %% plot displacement
         if (print_displacement == 1)
         figure(1);
-        plot(xn,U,'--*','linewidth',3,'DisplayName','Numerical');
         if (example == 1 || example == 2 || example == 3)
-            hold on;
             plot(xn,exact_u(xn,t(n),example),'-k','linewidth',2,'DisplayName','Exact');
-            hold off;
         end
+        hold on;
+        plot(xn,U,'--*r','MarkerSize',12,'DisplayName','Numerical');
+        hold off;
         xlim([floor(a) b]);
         xTickLocations = [floor(abs(xn(1))) (xn(1) + xn(end))/2 xn(end)];
         set(gca,'XTick', xTickLocations);
@@ -333,30 +332,32 @@ for n = 2:1:length(t)
             xTickString{k} = xTickLocations(k);
         end
         set(gca,'XTickLabel', xTickString);
-        xlabel('Depth x [m]');
+        xlabel('x [m]');
         ylabel('Displacement u [m]');
         if (example == 1 || example == 2 || example == 3)
-            title(['t = ',num2str(t(n)),', M = ',num2str(M),', tau = ',num2str(tau)],'FontSize',18);
+            title(['t = ',num2str(t(n))]);
         elseif (example >= 4)
-            title(['t = ',num2str(t(n)/24),' [day] '],'FontSize',18);
+            title(['t = ',num2str(t(n)/24),' [day] ']);
         end
         %% legend properties
         lh = legend;
         set(lh,'FontSize',24,'location','southeast');
         legend boxoff
-        legend off;
+        if (example >= 4)
+            legend off;
+        end
         box off;
         pause(0.1);
         end
         %% plot pressure
         if (print_pressure == 1)
         figure(2);
-        plot(xcc,P,'o','linewidth',3,'MarkerSize',12,'DisplayName','Numerical');
-        if (example == 1 || example == 2 || example == 3)
-            hold on;
+        if (example == 1 || example == 2 || example == 3)     
             plot(xcc,exact_p(xcc,t(n),example),'-k','linewidth',2,'DisplayName','Exact');
-            hold off;
         end
+        hold on;
+        plot(xcc,P,'ob','MarkerSize',12,'DisplayName','Numerical');
+        hold off;
         xlim([floor(a) b]);
         xTickLocations = [floor(abs(xn(1))) (xn(1) + xn(end))/2 xn(end)];
         set(gca,'XTick', xTickLocations);
@@ -364,30 +365,32 @@ for n = 2:1:length(t)
             xTickString{k} = xTickLocations(k);
         end
         set(gca,'XTickLabel', xTickString);
-        xlabel('Depth x [m]');
+        xlabel('x [m]');
         ylabel('Pressure p [MPa]'); 
         if (example == 1 || example == 2 || example == 3)
-            title(['t = ',num2str(t(n)),', M = ',num2str(M),', tau = ',num2str(tau)],'FontSize',18);
+            title(['t = ',num2str(t(n))]);
         elseif (example >= 4)
-            title(['t = ',num2str(t(n)/24),' [day] '],'FontSize',18);
+            title(['t = ',num2str(t(n)/24),' [day] ']);
         end
         %% legend properties
         lh = legend;
         set(lh,'FontSize',24,'location','southeast');
         legend boxoff
-        legend off;
+        if (example >= 4)
+            legend off;
+        end
         box off;
         pause(0.1);
         end
         %% plot flux 
         if (print_flux == 1)
-        figure(3);
-        plot(xn,Q,':*','linewidth',3,'DisplayName','Numerical');
+        figure(3);      
         if (example == 1 || example == 2 || example == 3)
-            hold on;
             plot(xn,exact_qf(xn,t(n),example),'-k','linewidth',2,'DisplayName','Exact');
-            hold off;
         end
+        hold on;
+        plot(xn,Q,':*r','MarkerSize',12,'DisplayName','Numerical');
+        hold off;
         xlim([floor(a) b]);
         xTickLocations = [floor(abs(xn(1))) (xn(1) + xn(end))/2 xn(end)];
         set(gca,'XTick', xTickLocations);
@@ -398,16 +401,18 @@ for n = 2:1:length(t)
         xlabel('x [m]');
         ylabel('Flux q_f [m/hr]');
         if (example == 1 || example == 2 || example == 3)
-            title(['t = ',num2str(t(n)),', M = ',num2str(M),', tau = ',num2str(tau)],'FontSize',18);
+            title(['t = ',num2str(t(n))]);
         elseif (example >= 4)
-            title(['t = ',num2str(t(n)/24),' [day] '],'FontSize',18);
+            title(['t = ',num2str(t(n)/24),' [day] ']);
         end
         %% legend properties
         lh = legend;
         set(lh,'FontSize',24,'location','southeast');
         box off;
-        legend off;
-        pause
+        if (example >= 4)
+            legend off;
+        end
+        pause(0.1);
         end
     %%
     end
@@ -417,7 +422,7 @@ end % time loop ends
 if (example >= 4)
     figure(4);
     hold on;
-    plot(t,settlement,'-','linewidth',2);
+    plot(t,settlement,'-*','MarkerSize',12);
     hold off;
     xlim([0 Tend]);
     xTickLocations = [0 (0 + Tend)/(2) Tend];
@@ -428,7 +433,7 @@ if (example >= 4)
     set(gca,'XTickLabel', xTickString);
     xlabel('t [hr]');
     ylabel('Settlement [m]');
-    title(['M = ',num2str(M),', tau = ',num2str(tau)],'FontSize',18);
+    title('Total settlement');
     box off;
     %% display maximum settlemen
     format long
@@ -518,7 +523,7 @@ elseif (example == 4)
     betaf = 4.16e-4;
     rhof = 998.21 * (1e-6 * (1/3600)*(1/3600)); 
     rhos = 2700 * (1/3600) * (1/3600) * 1e-6 + 0*xcc;
-    G = 1.27290528e8 * 1; 
+    G = 1.27290528e8 * 0; 
 elseif (example == 5)
     lambda = 0*xcc;
     mu = 0*xcc;
@@ -526,7 +531,7 @@ elseif (example == 5)
     phi = 0*xcc;
     rhos = 0*xcc;
     for j = 1:1:length(xcc)
-        if (xcc(j) <= 0.5)
+        if (xcc(j) >= 0.5)
             E = 15;
             nu = 0.25;
             lambda(j) = (E*nu)/((1 + nu)*(1-2*nu));
@@ -548,7 +553,7 @@ elseif (example == 5)
     alpha = 1;
     betaf = 4.16e-4;
     rhof = 998.21 * (1e-6 * (1/3600)*(1/3600)); 
-    G = 1.27290528e8 * 1; % [m / hr^2]
+    G = 1.27290528e8; 
 else
     %% custom scenario
     lambda = 1 + 0*xcc;
