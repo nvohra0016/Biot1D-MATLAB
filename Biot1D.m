@@ -435,9 +435,9 @@ if (example >= 4)
     ylabel('Settlement [m]');
     title('Total settlement');
     box off;
-    %% display maximum settlemen
-    format long
-    settlement(end)
+    %% display maximum settlement
+    % format long
+    % settlement(end)
 end
 %%
 %% print errors
