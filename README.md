@@ -37,7 +37,7 @@ Website: [https://nvohra0016.github.io}{https://nvohra0016.github.io](https://nv
 
 Malgorzata Peszynska: malgo.peszynska@oregonstate.edu
 
-Website: [https://sites.science.oregonstate.edu/~mpesz/index.html}{https://sites.science.oregonstate.edu/~mpesz/index.html](https://sites.science.oregonstate.edu/~mpesz/index.html)
+Website: [https://sites.science.oregonstate.edu/~mpesz/index.html](https://sites.science.oregonstate.edu/~mpesz/index.html)
 
 
 
