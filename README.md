@@ -16,24 +16,6 @@ To run example 4:
 
 More examples and the complete documentation can be found in the [Documentation](https://github.com/nvohra0016/Biot1D-MATLAB/blob/452e0725a63db48f469df6ea6edb58c15e7215f8/Documentation.pdf).
 
-## Physical parameters:
-
-| Parameter           | Description                              | Unit                 |
-|---------------------|------------------------------------------|----------------------|
-| E                   | Young's modulus                          | [MPa]                |
-| nu                  | Poisson's ratio                          | [-]                  |
-| lam_const, mu_const | Lamé parameter calculated using E and nu | [MPa]                |
-| betaf               | Fluid compressibility                    | [1/MPa]              |
-| kappa               | Permeability                             | [m<sup>2</sup>]      |
-| viscosity           | Fluid viscosity                          | [MPa hr]             |
-| alpha               | Biot's constant                          | [-]                  |
-| rhof                | Fluid density                             | [kg / m<sup>3</sup>] |
-| rhos                | Solid density (eg. of soil grains)       | [kg / m<sup>3</sup>] |
-| G                   | Acceleration due to gravity; 1.27290582 $\times 10^8$                 | [m / hr<sup>2</sup>]  |
-
-### Conversion factors used:
-1. 1[kg / m<sup>3</sup>] =  = (1/3600 * 1/3600 * 1e-6) [MPa hr / m<sup>2</sup>].
-2. 1[m / s<sup>2</sup>] =  = (3600 * 3600 ) [m / hr<sup>2</sup>].
 
 ## Acknowledgement 
 
@@ -47,6 +29,15 @@ We ask that you respect the [Creative Commons CC BY-NC-ND 4.0 Attribution-NonCom
 
 See License.md for the full text.
 
+## Contact
+
+Naren Vohra: vohran@oregonstate.edu
+
+Website: [https://nvohra0016.github.io}{https://nvohra0016.github.io](https://nvohra0016.github.io}{https://nvohra0016.github.io)
+
+Malgorzata Peszynska: malgo.peszynska@oregonstate.edu
+
+Website: [(https://sites.science.oregonstate.edu/~mpesz/index.html}{https://sites.science.oregonstate.edu/~mpesz/index.html)](https://sites.science.oregonstate.edu/~mpesz/index.html}{https://sites.science.oregonstate.edu/~mpesz/index.html)
 
 
 
