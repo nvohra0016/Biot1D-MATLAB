@@ -33,7 +33,7 @@ See License.md for the full text.
 
 Naren Vohra: vohran@oregonstate.edu
 
-Website: [https://nvohra0016.github.io}{https://nvohra0016.github.io](https://nvohra0016.github.io}{https://nvohra0016.github.io)
+Website: [https://nvohra0016.github.io](https://nvohra0016.github.io)
 
 Malgorzata Peszynska: malgo.peszynska@oregonstate.edu
 
