@@ -2,7 +2,7 @@
 
 Author: Naren Vohra, Malgorzata Peszynska
 
-The 1D poroelasticity code is used to model deformation and flow in fully saturated porous media using the quasi-static Biot's equations.
+The 1D poroelasticity code is used to model deformation and flow in fully saturated porous media using the quasi-static Biot's equations. The code is written in MATLAB.
 
 ## Simulation example
 
@@ -20,6 +20,9 @@ More examples and the complete documentation can be found in the [Documentation]
 ## Acknowledgement 
 
 This research was partially supported by NSF DMS-1912938 "Modeling with Constraints and Phase Transitions in Porous Media" and NSF DMS-1522734 "Phase transitions in porous media across multiple scales"; PI: Dr. Malgorzata Peszynska. 
+
+## Python code
+The code is also available in Python here [https://github.com/nvohra0016/Poroelasticity1d/tree/master/poroelasticity](https://github.com/nvohra0016/Poroelasticity1d/tree/master/poroelasticity). 
 
 ## License
 
