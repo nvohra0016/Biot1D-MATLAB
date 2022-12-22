@@ -22,7 +22,7 @@ More examples and the complete documentation can be found in the [Documentation]
 This research was partially supported by NSF DMS-1912938 "Modeling with Constraints and Phase Transitions in Porous Media" and NSF DMS-1522734 "Phase transitions in porous media across multiple scales"; PI: Dr. Malgorzata Peszynska. 
 
 ## Python code
-The code is also available in Python here [https://github.com/nvohra0016/Poroelasticity1d/tree/master/poroelasticity](https://github.com/nvohra0016/Poroelasticity1d/tree/master/poroelasticity). 
+The code is also available in Python here [https://github.com/nvohra0016/Biot1D-Python](https://github.com/nvohra0016/Biot1D-Python). 
 
 ## License
 
