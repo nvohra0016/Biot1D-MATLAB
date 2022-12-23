@@ -437,19 +437,17 @@ if (example >= 4)
     box off;
     %% display maximum settlement
     % format long
-    % settlement(end)
+     settlement(end)
 end
 %%
 %% print errors
 %%
 if (print_errors == 1)
-    fprintf('l_infty(l2) error pressure p: %0.5g',linfty_l2_p);
+    fprintf('l_infty(l_2) error pressure p: %0.5g',linfty_l2_p);
     fprintf('\r');
-    fprintf(', at time: %0.5g',p_err_time);
+    fprintf('l_2(l_2) error flux q_f: %0.5g',l2_l2_qf);
     fprintf('\r');
-    fprintf('l_2(l2) error flux q_f: %0.5g',l2_l2_qf);
-    fprintf('\r');
-    fprintf('l_infty(H1) error displacement u: %0.5g',linfty_H1_u);
+    fprintf('l_infty(H_1) error displacement u: %0.5g',linfty_H1_u);
     fprintf('\r');
 end
 %%
@@ -501,13 +499,13 @@ end
 function [lambda, mu, alpha, kappa, viscosity, betaf, phi, rhof, rhos, G] = physical_parameters(xcc, example)
 %%
 if (example == 1 || example == 2 || example == 3)
-    lambda = 1 + 0*xcc;
-    mu = 1 + 0*xcc;
-    kappa = 1 + 0*xcc;
-    phi = 1 + 0*xcc;
-    viscosity = 1;
+    lambda = 2*0 + 1 + 0*xcc;
+    mu = 3*0 + 1 + 0*xcc;
+    kappa = 1e-1*0 + 1 + 0*xcc;
+    phi = 0.5*0 + 1 + 0*xcc;
+    viscosity = 2*0 + 1;
     alpha = 1;
-    betaf = 1;
+    betaf = 5*0 + 1;
     rhof = 1;
     rhos = 1 + 0*xcc;
     G = 0.0;
@@ -523,7 +521,7 @@ elseif (example == 4)
     betaf = 4.16e-4;
     rhof = 998.21 * (1e-6 * (1/3600)*(1/3600)); 
     rhos = 2700 * (1/3600) * (1/3600) * 1e-6 + 0*xcc;
-    G = 1.27290528e8 * 0; 
+    G = 1.27290528e8 * 1;
 elseif (example == 5)
     lambda = 0*xcc;
     mu = 0*xcc;
@@ -531,7 +529,7 @@ elseif (example == 5)
     phi = 0*xcc;
     rhos = 0*xcc;
     for j = 1:1:length(xcc)
-        if (xcc(j) >= 0.5)
+        if (xcc(j) <= 0.5)
             E = 15;
             nu = 0.25;
             lambda(j) = (E*nu)/((1 + nu)*(1-2*nu));
@@ -553,7 +551,7 @@ elseif (example == 5)
     alpha = 1;
     betaf = 4.16e-4;
     rhof = 998.21 * (1e-6 * (1/3600)*(1/3600)); 
-    G = 1.27290528e8; 
+    G = 1.27290528e8 * 0; 
 else
     %% custom scenario
     lambda = 1 + 0*xcc;
@@ -632,10 +630,12 @@ end
 function y = exact_qf(x,t,example)
 %% 1.
 if (example == 1)
+    [lambda, mu, alpha, kappa, viscosity, betaf, phi, rhof, rhos, G] = physical_parameters(x, example);
     y = -sin(pi*t/2)*pi*cos(pi*x);
 %% 2.
 elseif (example == 2)
-    y =  (pi/2)*sin(pi*x/2).*exp(-t);
+    [lambda, mu, alpha, kappa, viscosity, betaf, phi, rhof, rhos, G] = physical_parameters(x, example);
+    y =  (kappa(1)/viscosity).*(pi/2)*sin(pi*x/2).*exp(-t);
 %% 3.
 elseif (example == 3)
     y = -1 + 0*x + 0*t;
