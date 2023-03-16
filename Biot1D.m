@@ -30,7 +30,7 @@
 %%
 %%
 %%
-function [xn, xcc, t, U, P, Q] = Biot1D(el_nodes, ntsteps, BC_flags, example)
+function [xn, xcc, t, U, P, Q] = Biot1D(Tend, el_nodes, tau, BC_flags, example)
 tic
 %% set default plot values
 set(groot,'defaultLineLineWidth',4)
@@ -69,7 +69,6 @@ else
     end
 end
 %% time step size and temporal grid
-tau = (Tend-0)/ntsteps;
 t = 0:tau:Tend;
 t = t(:);
 %% physical parameters
@@ -214,7 +213,7 @@ end
 %%
 for n = 2:1:length(t)
     %%
-    %% compute rhs_f vector (BOM source)
+    %% compute rhs_f vector (BOM source) using trapezoidal rule
     %%
     rhs_f_val = rhs_f(xn,t(n),example);
     rhs_f_vector = zeros(M+1,1);
