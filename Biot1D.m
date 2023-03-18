@@ -1,4 +1,3 @@
-%%%
 % This file is part of Biot1D-MATLAB
 % Biot1D-MATLAB is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 % Biot1D-MATLAB is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
@@ -241,11 +240,6 @@ function v = permfun(x)
 BIOT_data;
 v = 0*x + COF_kappa;
 end
-
-%function v = porfun(x)
-%BIOT_data;
-%v = 0*x + COF_c0;
-%end
 
 %%%%%%%%%%
 function u = u_exfun(x,t,mycase)
