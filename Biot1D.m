@@ -4,7 +4,7 @@
 % You should have received a copy of the GNU General Public License along with Biot1D-MATLAB. If not, see <https://www.gnu.org/licenses/>.
 % The full text of the license can be found in the file License.md.
 %%
-function   [xfem,usol,xplot,psol,fcontent0]=...
+function   [xfem,usol,xplot,psol]=...
     Biot1D (Tend,nx,dt,bdaryflags,caseflag,ifsave,ifplot) 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% <bdaryflags> vector of flags for [MMHH], Dirichlet (0) or Neumann (1) flags 
@@ -30,14 +30,24 @@ function   [xfem,usol,xplot,psol,fcontent0]=...
 %[xu,u,xp,p]=Biot1d(0.1,10,0.1,[1,0,1,1],2,1,1);
 % case 3, no file, plot every 5
 %[xu,u,xp,p]=Biot1d(1,10,0.1,[1,0,1,1],3,0,5);
+%% DEFAULT PLOT PROPERTIES
+set(groot,'defaultLineLineWidth',4)
+set(0,'DefaultaxesLineWidth', 3)
+set(0,'DefaultaxesFontSize', 16)
+set(0,'DefaultTextFontSize', 16)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% DATA
-if nargin<5,Tend=0.1;nx=10;dt=0.1;bdaryflags=[0,0,0,0];caseflag=1;end
-if nargin<6, ifsave=0;end
-if nargin<7, ifplot=0;end
-%
 global MYCASEFLAG
 MYCASEFLAG = caseflag;
+%
+if (MYCASEFLAG == 1) Tend=1;nx=10;dt=0.1;bdaryflags=[0,0,0,0];
+elseif (MYCASEFLAG == 2) Tend=1;nx=[0;0.05;0.1;0.15;0.2;0.4;0.6;0.8;0.9;0.95;1.0];dt=0.1;bdaryflags=[1,0,1,0];
+end
+
+
+%if nargin<5,Tend=1;nx=10;dt=0.1;bdaryflags=[0,0,0,0];caseflag=1;end
+%if nargin<6, ifsave=0;end
+%if nargin<7, ifplot=0;end
 %
 if caseflag<4, ifexact=1;else, ifexact=0; end
 %
@@ -46,16 +56,25 @@ BIOT_data;
 %%%%%%%%%%%%% grid and data structures 
 %%
 t1 = 0; t2 = Tend; nt = (t2-t1) / dt; 
-%% GRID:
-% dx is grid size of each CCFD cell; 
+%% GRID
+% dx is grid size of each CCFD cell;
 % x is position of left node of each cell
-dx = (b-a)/nx * ones(nx,1); x0 = a; 
-x = 0*dx; x(1)=x0; for j=2:nx, x(j)=x(j-1)+dx(j-1);end
 % xplot is the position of CCFD values
 % xfem is position for displacements: x expanded by last node
-xplot = x + dx/2;
-xfem = x; xfem(nx+1)=x(nx)+dx(nx);
-
+%% UNIFORM GRID
+if (size(nx,1) == 1)
+    dx = (b-a)/nx * ones(nx,1); x0 = a;
+    x = 0*dx; x(1)=x0; for j=2:nx, x(j)=x(j-1)+dx(j-1);end
+    xplot = x + dx/2;
+    xfem = x; xfem(nx+1)=x(nx)+dx(nx);
+%% NON-UNIFORM GRID    
+else
+    x = nx;
+    nx = size(nx,1) - 1;
+    dx = x(2:end) - x(1:end-1);
+    xplot = x(1:end-1) + dx/2;
+    xfem = x;
+ end
 %%%% FLOW part
 %% permeability coefficient, per cell
 perm = permfun(xplot);
@@ -130,7 +149,6 @@ mat(nMind,nHind) = stiff_up;
 if ifsave==-1, full(mat),end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  TIME LOOP AND SOLVER
 fcontent = fluid_init(xplot,caseflag);
-fcontent0 = fcontent;
 %% 
 %errvec = [];
 t = t1;
@@ -192,23 +210,26 @@ for n = 1:nt %  time step loop
     if ifplot>0 && (rem(n,ifplot)==0 || n==1 || t==Tend)
         if ifexact == 0
             fprintf('Time step %d at t = %g\n',n,t);
-            subplot(2,1,1);plot(xplot,psol,'b--o',xfem,usol,'r--*');
-            subplot(2,1,2);plot(xplot,psol,'b--o',xfem,usol,'r--*');
+            subplot(2,1,1);plot(xplot,psol,'b--o',xfem,usol,'r--*','linewidth',3,'MarkerSize',12);
+            subplot(2,1,2);plot(xplot,psol,'b--o',xfem,usol,'r--*','linewidth',3,'MarkerSize',12);
             if caseflag ==4,
-                plot(xplot,psol,'b--o',xfem,usol,'r--*');
+                plot(xplot,psol,'b--o',xfem,usol,'r--*','linewidth',3,'MarkerSize',12);
                 legend('p','u','FontSize',16);
+                xlabel('x');
                 title(sprintf('Solution at t=%g M=%d tau=%g. CASE=%d. BDARY=[%g %g %g %g]',t,nx,dt,caseflag,bdaryflags));
             elseif caseflag ==5
-                subplot(2,1,1);plot(xfem,usol,'r--*'); title(sprintf('u(x,t) at t=%g M=%d tau=%g. CASE=%d. BDARY=[%g %g %g %g]',t,nx,dt,caseflag,bdaryflags));
-                subplot(2,1,2);plot(xplot,psol,'b--o'); title(sprintf('p(x,t) at t=%g M=%d tau=%g. CASE=%d. BDARY=[%g %g %g %g]',t,nx,dt,caseflag,bdaryflags));
+                subplot(2,1,1);plot(xfem,usol,'r--*','linewidth',3,'MarkerSize',12); title(sprintf('u(x,t) at t=%g M=%d tau=%g. CASE=%d. BDARY=[%g %g %g %g]',t,nx,dt,caseflag,bdaryflags));
+                subplot(2,1,2);plot(xplot,psol,'b--o','linewidth',3,'MarkerSize',12); title(sprintf('p(x,t) at t=%g M=%d tau=%g. CASE=%d. BDARY=[%g %g %g %g]',t,nx,dt,caseflag,bdaryflags));
+                xlabel('x');
             else
             end
             pause(.01);
         else
-            plot(xplot,psol,'b--o',xfem,usol,'r--*');
+            plot(xplot,psol,'b--o',xfem,usol,'r--*','linewidth',3,'MarkerSize',12);
             hold on; 
-            plot(xplot,pex,'b',xfem,uex,'r');
+            plot(xplot,pex,'b',xfem,uex,'r','linewidth',3,'MarkerSize',12);
             hold off;
+            xlabel('x');
             legend('p','u','pex','uex','FontSize',16);
             title(sprintf('Solution at t=%g M=%d tau=%g. CASE=%d. BDARY=[%g %g %g %g]',t,nx,dt,caseflag,bdaryflags));
             pause(.01);
@@ -284,18 +305,18 @@ end
 function pdx = p_dexfun (x,t,mycase)
 BIOT_data;
 if mycase ==1
-    pdx = pi*sin(pi*t/2)*cos(pi*x);
+    pdx = pi * sin(pi*t/2) * cos(pi*x);
 elseif mycase ==2
-    pdx = -pi/2*sin(pi*x/2)*exp(-t);
+    pdx = -pi/2 * sin(pi*x/2) * exp(-t);
 elseif mycase ==3
-    pdx = 0*x+1;
+    pdx = 0*x + 1;
 end
 end
 
 function v = fluid_init(x,mycase)
 BIOT_data;
 if mycase <4
-    v = COF_c0*p_exfun(x,0,mycase)+COF_alpha*u_dexfun(x,0,mycase);
+    v = COF_c0*p_exfun(x,0,mycase) + COF_alpha*u_dexfun(x,0,mycase);
 else
     v = 0*x;
 end
@@ -308,7 +329,7 @@ if mycase ==1
     pfun = (COF_c0 + COF_alpha/COF_lambda)*pi/2*cos(pi*t/2)*sin(pi*x)+...
         COF_kappa*pi*pi*sin(pi*t/2).*sin(pi*x);
 elseif mycase == 2
-    pfun = [-COF_c0 - COF_alpha*pi/2 + COF_kappa*pi^2/4]*cos(pi*x/2)*exp(-t);
+    pfun = (-COF_c0 - COF_alpha*pi/2 + COF_kappa*pi^2/4)*cos(pi*x/2)*exp(-t);
 elseif mycase == 3
     pfun =0*x;
 elseif mycase >=4
@@ -320,9 +341,9 @@ function ufun = u_rhs(x,t,mycase)
 %
 BIOT_data;
 if mycase == 1
-    ufun = (-(COF_lambda+2*COF_mu)*pi/COF_lambda + COF_alpha*pi) *sin(pi*t/2).*cos(pi*x); 
+    ufun = (-(COF_lambda+2*COF_mu)*pi/COF_lambda + COF_alpha*pi)*sin(pi*t/2).*cos(pi*x); 
 elseif mycase == 2
-    ufun = [(COF_lambda+2*COF_mu)*pi^2/4-COF_alpha*pi/2]*sin(pi*x/2)*exp(-t);
+    ufun = ((COF_lambda+2*COF_mu)*pi^2/4-COF_alpha*pi/2) * sin(pi*x/2)*exp(-t);
 elseif mycase ==3
     ufun = 0*x + COF_alpha;
 elseif mycase >=4

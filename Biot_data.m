@@ -43,5 +43,5 @@ elseif MYCASEFLAG ==5 %% Example [NV/4]
     COF_alpha = 1;
     COF_kappa  = 8e-16/1.1390e-6;
 else
-    error('Not implemented');
+    error('Example/scenario not implemented');
 end
