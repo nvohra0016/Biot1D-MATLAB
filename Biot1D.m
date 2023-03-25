@@ -42,6 +42,8 @@ MYCASEFLAG = caseflag;
 %
 if (MYCASEFLAG == 1) Tend=1;nx=10;dt=0.1;bdaryflags=[0,0,0,0];
 elseif (MYCASEFLAG == 2) Tend=1;nx=[0;0.05;0.1;0.15;0.2;0.4;0.6;0.8;0.9;0.95;1.0];dt=0.1;bdaryflags=[1,0,1,0];
+elseif (MYCASEFLAG == 3) Tend=1;nx=20;dt=0.1;bdaryflags=[0,1,1,1];
+elseif (MYCASEFLAG == 4) Tend=24;nx=20;dt=2.4;bdaryflags=[1,0,0,1];
 end
 
 
@@ -168,7 +170,7 @@ for n = 1:nt %  time step loop
     %fprintf('rhs\n');elq',
     %% get the values of bconditions or fluxes
     if ifexact == 0 %% no analytical solution
-        pval1 = 0; pval2 =0; uval1 = -1; uval2 = 0;
+        pval1 = 0; pval2 =0; uval1 = -0.1; uval2 = 0;
     else  %% known analytical solutions or another case
         if bdaryflags(1)==0, uval1 = u_exfun(xfem(1),t,caseflag); else, uval1 = elcof(1)*u_dexfun(xfem(1),t,caseflag)-COF_alpha*p_exfun(xfem(1),t,caseflag);end
         if bdaryflags(2)==0, uval2 = u_exfun(xfem(end),t,caseflag); else, uval2 = elcof(nx)*u_dexfun(xfem(end),t,caseflag)-COF_alpha*p_exfun(xfem(end),t,caseflag);end
@@ -213,24 +215,60 @@ for n = 1:nt %  time step loop
             subplot(2,1,1);plot(xplot,psol,'b--o',xfem,usol,'r--*','linewidth',3,'MarkerSize',12);
             subplot(2,1,2);plot(xplot,psol,'b--o',xfem,usol,'r--*','linewidth',3,'MarkerSize',12);
             if caseflag ==4,
-                plot(xplot,psol,'b--o',xfem,usol,'r--*','linewidth',3,'MarkerSize',12);
-                legend('p','u','FontSize',16);
-                xlabel('x');
-                title(sprintf('Solution at t=%g M=%d tau=%g. CASE=%d. BDARY=[%g %g %g %g]',t,nx,dt,caseflag,bdaryflags));
+                % displacement
+                subplot(2,1,1);plot(xfem,usol,'r--*','linewidth',3,'MarkerSize',12);
+                lh = legend('u');
+                set(lh,'FontSize',16,'location','northeast');
+                legend boxoff;
+                xlabel('x [m]');
+                ylabel('u [m]')
+                xlim([a b]);
+                box off;
+                % pressure
+                subplot(2,1,2);plot(xplot,psol,'b--o','linewidth',3,'MarkerSize',12);
+                lh = legend('p');
+                set(lh,'FontSize',16,'location','northwest');
+                legend boxoff;
+                xlabel('x [m]');
+                ylabel('p [MPa]')
+                xlim([a b]);
+                box off;
+                sgtitle([sprintf('t=%g M=%d tau=%g. CASE=%d. BDARY=[%g %g %g %g]',t,nx,dt,caseflag,bdaryflags)],'FontSize',15);
             elseif caseflag ==5
-                subplot(2,1,1);plot(xfem,usol,'r--*','linewidth',3,'MarkerSize',12); title(sprintf('u(x,t) at t=%g M=%d tau=%g. CASE=%d. BDARY=[%g %g %g %g]',t,nx,dt,caseflag,bdaryflags));
-                subplot(2,1,2);plot(xplot,psol,'b--o','linewidth',3,'MarkerSize',12); title(sprintf('p(x,t) at t=%g M=%d tau=%g. CASE=%d. BDARY=[%g %g %g %g]',t,nx,dt,caseflag,bdaryflags));
-                xlabel('x');
-            else
+                % displacement
+                subplot(2,1,1);plot(xfem,usol,'r--*','linewidth',3,'MarkerSize',12);
+                lh = legend('u','FontSize',16);
+                set(lh,'FontSize',16,'location','northwest');
+                legend boxoff;
+                xlabel('x [m]');
+                ylabel('u [m]')
+                xlim([a b]);
+                box off;
+                % pressure
+                subplot(2,1,2);plot(xplot,psol,'b--o','linewidth',3,'MarkerSize',12);
+                lh = legend('p');
+                set(lh,'FontSize',16,'location','northwest');
+                legend boxoff;
+                xlabel('x [m]');
+                ylabel('p [MPa]')
+                xlim([a b]);
+                box off;
+                sgtitle(sprintf('t=%g M=%d tau=%g. CASE=%d. BDARY=[%g %g %g %g]',t,nx,dt,caseflag,bdaryflags),'FontSize',15);
             end
             pause(.01);
         else
-            plot(xplot,psol,'b--o',xfem,usol,'r--*','linewidth',3,'MarkerSize',12);
-            hold on; 
+            % displacement
             plot(xplot,pex,'b',xfem,uex,'r','linewidth',3,'MarkerSize',12);
-            hold off;
+            % pressure
+            hold on; 
+            plot(xplot,psol,'b--o',xfem,usol,'r--*','linewidth',3,'MarkerSize',12);
+            hold off;   
+            lh = legend('p','u','pex','uex');
+            set(lh,'FontSize',16,'location','northwest');
+            legend boxoff;
             xlabel('x');
-            legend('p','u','pex','uex','FontSize',16);
+            xlim([a b]);
+            box off;
             title(sprintf('Solution at t=%g M=%d tau=%g. CASE=%d. BDARY=[%g %g %g %g]',t,nx,dt,caseflag,bdaryflags));
             pause(.01);
         end
@@ -265,12 +303,12 @@ end
 %%%%%%%%%%
 function u = u_exfun(x,t,mycase)
 BIOT_data;
-if mycase==3
-    u = 2 - x;
-elseif mycase ==1
+if mycase ==1
     u = -1/(COF_lambda*pi)*sin(pi*t/2).*cos(pi*x); 
 elseif mycase ==2
     u = sin(pi*x/2)*exp(-t);
+elseif mycase==3
+    u = 2 - x;
 else
     error('u exfun not available');
 end
@@ -278,12 +316,12 @@ end
 
 function udx = u_dexfun (x,t,mycase)
 BIOT_data;
-if mycase ==3
-    udx = 0*x-1;
-elseif mycase ==1
+if mycase ==1
     udx = 1/(COF_lambda)*sin(pi*t/2).*sin(pi*x); 
 elseif mycase ==2
     udx = pi/2*cos(pi*x/2)*exp(-t);
+elseif mycase ==3
+    udx = 0*x-1;
 else
     error('dexfun not implemented');
 end
@@ -291,12 +329,12 @@ end
 
 function p = p_exfun(x,t,mycase)
 BIOT_data;
-if mycase ==3
-    p = x+1;
-elseif mycase ==1 
+if mycase ==1 
     p = sin(pi*t/2)*sin(pi*x);
 elseif mycase == 2
     p = cos(pi*x/2)*exp(-t);
+elseif mycase ==3
+    p = x+1;
 else
     error("p_exfun not implemented");
 end

@@ -30,12 +30,14 @@ elseif MYCASEFLAG ==3 %% Example [NV/3]
     COF_alpha = 1;
     COF_kappa  = 1;
 elseif MYCASEFLAG ==4 %% Example [NV/4]
-    a = 0; b = 1;
-    COF_c0 = 1; 
-    COF_lambda = 1; COF_mu = 1; 
+    a = 0; b = 0.1;
+    E = 20;
+    nu = 0.30;
+    COF_c0 = 2.08e-4; 
+    COF_lambda = (E*nu)/((1 + nu)*(1-2*nu)); COF_mu = E/(2*(1+nu));
     COF_alpha = 1;
-    COF_kappa  = 1;
-elseif MYCASEFLAG ==5 %% Example [NV/4]
+    COF_kappa  = 1e-17/2.7822e-13;
+elseif MYCASEFLAG ==5 %% Example [NV/5]
     a = 0; b = 1;
     COF_c0 = 1.5750e-10; 
     COF_lambda = 2.8846e7; 
