@@ -40,18 +40,18 @@ set(0,'DefaultTextFontSize', 16)
 global MYCASEFLAG
 MYCASEFLAG = caseflag;
 %
-if (MYCASEFLAG == 1) Tend=1;nx=10;dt=0.1;bdaryflags=[0,0,0,0];
-elseif (MYCASEFLAG == 2) Tend=1;nx=[0;0.05;0.1;0.15;0.2;0.4;0.6;0.8;0.9;0.95;1.0];dt=0.1;bdaryflags=[1,0,1,0];
-elseif (MYCASEFLAG == 3) Tend=1;nx=20;dt=0.1;bdaryflags=[0,1,1,1];
-elseif (MYCASEFLAG == 4) Tend=24;nx=20;dt=2.4;bdaryflags=[1,0,0,1];
+if (MYCASEFLAG == 1) a=0; b=1; Tend=1; nx=10; dt=0.1; bdaryflags=[0,0,0,0];
+elseif (MYCASEFLAG == 2) a=0; b=1; Tend=1; nx=[0;0.05;0.1;0.15;0.2;0.4;0.6;0.8;0.9;0.95;1.0]; dt=0.1; bdaryflags=[1,0,1,0];
+elseif (MYCASEFLAG == 3) a=0; b=1; Tend=1; nx=20; dt=0.1; bdaryflags=[0,1,1,1];
+elseif (MYCASEFLAG == 4) a=0; b=0.1; Tend=24; nx=20; dt=2.4; bdaryflags=[1,0,0,1];
+elseif (MYCASEFLAG == 5) a=0; b=1; Tend=8760; nx=20; dt=87.6; bdaryflags=[1,0,0,1];
 end
-
 
 %if nargin<5,Tend=1;nx=10;dt=0.1;bdaryflags=[0,0,0,0];caseflag=1;end
 %if nargin<6, ifsave=0;end
 %if nargin<7, ifplot=0;end
 %
-if caseflag<4, ifexact=1;else, ifexact=0; end
+if caseflag<4, ifexact=1; else, ifexact=0; end
 %
 BIOT_data;
 %
@@ -66,7 +66,7 @@ t1 = 0; t2 = Tend; nt = (t2-t1) / dt;
 %% UNIFORM GRID
 if (size(nx,1) == 1)
     dx = (b-a)/nx * ones(nx,1); x0 = a;
-    x = 0*dx; x(1)=x0; for j=2:nx, x(j)=x(j-1)+dx(j-1);end
+    x = 0*dx; x(1)=x0; for j=2:nx, x(j)=x(j-1)+dx(j-1); end
     xplot = x + dx/2;
     xfem = x; xfem(nx+1)=x(nx)+dx(nx);
 %% NON-UNIFORM GRID    
@@ -80,14 +80,15 @@ else
 %%%% FLOW part
 %% permeability coefficient, per cell
 perm = permfun(xplot);
-por = 0*xplot+COF_c0;
+%por = 0*xplot+COF_c0;
+por = porfun(xplot);
 %% set-up matrices
 % compute transmissibilities
 tx = zeros(nx+1,1); 
-for j=2:nx, tx(j)=2/(dx(j-1)/perm(j-1)+dx(j)/perm(j));end
+for j=2:nx, tx(j)=2/(dx(j-1)/perm(j-1)+dx(j)/perm(j)); end
 % Dirichlet 
-if bdaryflags (3) == 0, j = 1;      tx(j)=2/(dx(j)/perm(j));end
-if bdaryflags (4) == 0, j = nx + 1; tx(j)=2/(dx(j-1)/perm(j-1));end
+if bdaryflags (3) == 0, j = 1;      tx(j)=2/(dx(j)/perm(j)); end
+if bdaryflags (4) == 0, j = nx + 1; tx(j)=2/(dx(j-1)/perm(j-1)); end
 % for time dependent case
 tx = tx*dt;
 %%    
@@ -100,8 +101,8 @@ for j=2:nx
   stiff(gr,gr) = stiff(gr,gr) + tx(j);     
 end
 %% Dirichlet contributions to matrix
-if bdaryflags(3) == 0, j = 1; gr = 1; stiff(gr,gr) = stiff(gr,gr) + tx(j);     end
-if bdaryflags(4) == 0, j = nx + 1; gl = nx; stiff(gl,gl) = stiff(gl,gl) + tx(j);  end
+if bdaryflags(3) == 0, j = 1; gr = 1; stiff(gr,gr) = stiff(gr,gr) + tx(j); end
+if bdaryflags(4) == 0, j = nx + 1; gl = nx; stiff(gl,gl) = stiff(gl,gl) + tx(j); end
 %%
 %full(stiff), pause
 %
@@ -109,7 +110,8 @@ mass = diag(por.*dx);
 
 %%%% ELASTICITY: 
 %% elasticity coefficient
-elcof = xplot*0 + COF_lambda + 2*COF_mu;
+%elcof = xplot*0 + COF_lambda + 2*COF_mu;
+elcof = elcoffun(xplot);
 elstiff = sparse(nx+1,nx+1);
 elq = zeros(nx+1,1);
 %
@@ -134,7 +136,7 @@ for j=1:nx,  stiff_pu(j,j+1) = COF_alpha;stiff_pu(j,j)=-COF_alpha; end
 stiff_up=-stiff_pu';
 % remove the entries in the rows of M with Dirichlet b.c. for u
 if bdaryflags(1)==0, stiff_up(1,1:end)=0; end
-if bdaryflags(2)==0, stiff_up(nx+1,1:end)=0;end
+if bdaryflags(2)==0, stiff_up(nx+1,1:end)=0; end
 
 %% Global matrix: assemble
 nM = nx+1; nH = nx; nMind = 1:1:nM; nHind = nM+1:1:nM+nH;
@@ -148,7 +150,7 @@ mat (nHind,nHind) = stiff(:,:) + mass(:,:);
 mat(nHind,nMind) = stiff_pu;
 mat(nMind,nHind) = stiff_up;
 %
-if ifsave==-1, full(mat),end
+if ifsave==-1, full(mat), end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  TIME LOOP AND SOLVER
 fcontent = fluid_init(xplot,caseflag);
 %% 
@@ -158,12 +160,12 @@ for n = 1:nt %  time step loop
     t = t + dt;
     fcontent_old = fcontent;
     %% piecewise constant rule on every element for rhs in P
-    q = dt * dx.*p_rhs (xplot, t, caseflag);
-    q = q + dx.*fcontent_old;    
+    q = dt * dx.*p_rhs (xplot, t, caseflag); 
+    q = q + dx.*fcontent_old;
     
     %% trapezoidal rule on every element for rhs in U
     elq = 0*xfem;
-    for j=2:nx, elq(j) = (dx(j-1)+dx(j))/2*u_rhs(xfem(j),t,caseflag);end
+    for j=2:nx, elq(j) = (dx(j-1)+dx(j))/2*u_rhs(xfem(j),t,caseflag); end
     j=1;    elq(j) = dx(j)/2*u_rhs(xfem(j),t,caseflag);
     j=nx+1; elq(j) = dx(j-1)/2*u_rhs(xfem(j),t,caseflag);
     %
@@ -172,10 +174,10 @@ for n = 1:nt %  time step loop
     if ifexact == 0 %% no analytical solution
         pval1 = 0; pval2 =0; uval1 = -0.1; uval2 = 0;
     else  %% known analytical solutions or another case
-        if bdaryflags(1)==0, uval1 = u_exfun(xfem(1),t,caseflag); else, uval1 = elcof(1)*u_dexfun(xfem(1),t,caseflag)-COF_alpha*p_exfun(xfem(1),t,caseflag);end
-        if bdaryflags(2)==0, uval2 = u_exfun(xfem(end),t,caseflag); else, uval2 = elcof(nx)*u_dexfun(xfem(end),t,caseflag)-COF_alpha*p_exfun(xfem(end),t,caseflag);end
-        if bdaryflags(3)==0, pval1 = p_exfun(xfem(1),t,caseflag); else, pval1 = p_dexfun(xfem(1),t,caseflag);end
-        if bdaryflags(4)==0, pval2 = p_exfun(xfem(end),t,caseflag); else, pval2 = p_dexfun(xfem(end),t,caseflag);    end
+        if bdaryflags(1)==0, uval1 = u_exfun(xfem(1),t,caseflag); else, uval1 = elcof(1)*u_dexfun(xfem(1),t,caseflag)-COF_alpha*p_exfun(xfem(1),t,caseflag); end
+        if bdaryflags(2)==0, uval2 = u_exfun(xfem(end),t,caseflag); else, uval2 = elcof(nx)*u_dexfun(xfem(end),t,caseflag)-COF_alpha*p_exfun(xfem(end),t,caseflag); end
+        if bdaryflags(3)==0, pval1 = p_exfun(xfem(1),t,caseflag); else, pval1 = p_dexfun(xfem(1),t,caseflag); end
+        if bdaryflags(4)==0, pval2 = p_exfun(xfem(end),t,caseflag); else, pval2 = p_dexfun(xfem(end),t,caseflag); end
     end
     % contributions to [M] ELASTICITY from Dirichlet and Neumann    
     if bdaryflags(1) == 0, j=1; multi = elcof(j)/dx(j); elq(j) = uval1*multi; 
@@ -184,8 +186,8 @@ for n = 1:nt %  time step loop
     if bdaryflags(2) == 0, j=nx+1; multi = elcof(j-1)/dx(j-1); elq(j) = uval2*multi;
     else, j=nx+1; elq(j) =  elq(j) + uval2; end
     % contributions of [H] FLOW from Dirichlet bdary conditions 
-    if bdaryflags(3) == 0, q(1) = q(1) + tx(1) * pval1; else, q(1) = q(1) - dt*pval1;    end
-    if bdaryflags(4) == 0,  q(nx) = q(nx) + tx(nx+1) * pval2;  else, q(nx) = q(nx) + dt*pval2;    end
+    if bdaryflags(3) == 0, q(1) = q(1) + tx(1) * pval1; else, q(1) = q(1) - dt*pval1; end
+    if bdaryflags(4) == 0,  q(nx) = q(nx) + tx(nx+1) * pval2; else, q(nx) = q(nx) + dt*pval2; end
        
     %debug
     if ifsave==-1 && ifexact ~=0 %% check with exact solution
@@ -300,6 +302,16 @@ BIOT_data;
 v = 0*x + COF_kappa;
 end
 
+function v = porfun(x)
+BIOT_data;
+v = 0*x + COF_c0;
+end
+
+function v = elcoffun(x)
+BIOT_data;
+v = 0*x + COF_lambda + 2*COF_mu;
+end
+
 %%%%%%%%%%
 function u = u_exfun(x,t,mycase)
 BIOT_data;
@@ -310,7 +322,7 @@ elseif mycase ==2
 elseif mycase==3
     u = 2 - x;
 else
-    error('u exfun not available');
+    error('u_exfun not available');
 end
 end
 
@@ -323,7 +335,7 @@ elseif mycase ==2
 elseif mycase ==3
     udx = 0*x-1;
 else
-    error('dexfun not implemented');
+    error('u_dexfun not implemented');
 end
 end
 
@@ -348,6 +360,8 @@ elseif mycase ==2
     pdx = -pi/2 * sin(pi*x/2) * exp(-t);
 elseif mycase ==3
     pdx = 0*x + 1;
+else
+    error('p_dexfun not implemented');
 end
 end
 
