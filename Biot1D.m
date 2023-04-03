@@ -78,10 +78,10 @@ else
     xfem = x;
  end
 %%%% FLOW part
-%% permeability coefficient, per cell
+%% permeability coefficient, porosity coefficient, average media density per cell
 perm = permfun(xplot);
-%por = 0*xplot+COF_c0;
 por = porfun(xplot);
+rhoavg = por.*rhosfun(xplot) + (1-por).*COF_rhof;
 %% set-up matrices
 % compute transmissibilities
 tx = zeros(nx+1,1); 
@@ -110,7 +110,6 @@ mass = diag(por.*dx);
 
 %%%% ELASTICITY: 
 %% elasticity coefficient
-%elcof = xplot*0 + COF_lambda + 2*COF_mu;
 elcof = elcoffun(xplot);
 elstiff = sparse(nx+1,nx+1);
 elq = zeros(nx+1,1);
@@ -131,9 +130,9 @@ end
 
 %% Coupling terms
 stiff_pu = sparse(nx,nx+1); %% pressure equation: coupling to displacement
-for j=1:nx,  stiff_pu(j,j+1) = COF_alpha;stiff_pu(j,j)=-COF_alpha; end
+for j=1:nx,  stiff_pu(j,j+1) = COF_alpha; stiff_pu(j,j)=-COF_alpha; end
 % 
-stiff_up=-stiff_pu';
+stiff_up = -stiff_pu';
 % remove the entries in the rows of M with Dirichlet b.c. for u
 if bdaryflags(1)==0, stiff_up(1,1:end)=0; end
 if bdaryflags(2)==0, stiff_up(nx+1,1:end)=0; end
@@ -168,7 +167,10 @@ for n = 1:nt %  time step loop
     for j=2:nx, elq(j) = (dx(j-1)+dx(j))/2*u_rhs(xfem(j),t,caseflag); end
     j=1;    elq(j) = dx(j)/2*u_rhs(xfem(j),t,caseflag);
     j=nx+1; elq(j) = dx(j-1)/2*u_rhs(xfem(j),t,caseflag);
-    %
+    %% gravity term
+    for j=2:nx, elq(j) = elq(j) + COF_G*(dx(j-1)*rhoavg(j-1)+dx(j)*rhoavg(j))/2; end
+    j=1;    elq(j) = elq(j) + COF_G*dx(j)/2*rhoavg(j);
+    j=nx+1; elq(j) = elq(j) + COF_G*dx(j-1)/2*rhoavg(j-1);
     %fprintf('rhs\n');elq',
     %% get the values of bconditions or fluxes
     if ifexact == 0 %% no analytical solution
@@ -307,6 +309,11 @@ BIOT_data;
 v = 0*x + COF_c0;
 end
 
+function v = rhosfun(x)
+BIOT_data;
+v = 0*x + COF_rhos;
+end
+
 function v = elcoffun(x)
 BIOT_data;
 v = 0*x + COF_lambda + 2*COF_mu;
@@ -370,7 +377,7 @@ BIOT_data;
 if mycase <4
     v = COF_c0*p_exfun(x,0,mycase) + COF_alpha*u_dexfun(x,0,mycase);
 else
-    v = 0*x;
+    v = 0*x + COF_G*COF_rhof*COF_c0.*x;
 end
 end
 
