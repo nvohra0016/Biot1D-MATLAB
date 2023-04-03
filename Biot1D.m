@@ -167,7 +167,7 @@ for n = 1:nt %  time step loop
     for j=2:nx, elq(j) = (dx(j-1)+dx(j))/2*u_rhs(xfem(j),t,caseflag); end
     j=1;    elq(j) = dx(j)/2*u_rhs(xfem(j),t,caseflag);
     j=nx+1; elq(j) = dx(j-1)/2*u_rhs(xfem(j),t,caseflag);
-    %% gravity term
+    % gravity term
     for j=2:nx, elq(j) = elq(j) + COF_G*(dx(j-1)*rhoavg(j-1)+dx(j)*rhoavg(j))/2; end
     j=1;    elq(j) = elq(j) + COF_G*dx(j)/2*rhoavg(j);
     j=nx+1; elq(j) = elq(j) + COF_G*dx(j-1)/2*rhoavg(j-1);
@@ -187,10 +187,18 @@ for n = 1:nt %  time step loop
     %
     if bdaryflags(2) == 0, j=nx+1; multi = elcof(j-1)/dx(j-1); elq(j) = uval2*multi;
     else, j=nx+1; elq(j) =  elq(j) + uval2; end
+    %% trapezoidal rule for gravity term in P
+    rhsh = 0*xfem;
+    for j=2:nx, rhsh(j) = COF_rhof * COF_G * (dx(j-1)+dx(j))/2; end
+    j = 1;    rhsh(j) = COF_rhof * COF_G * dx(j)/2;
+    j = nx+1; rhsh(j) = COF_rhof * COF_G * dx(j-1)/2;
+    rhsh = rhsh .* tx;
+    rhshn = rhsh(2:end) - rhsh(1:end-1);
+    q = q - rhshn;
+
     % contributions of [H] FLOW from Dirichlet bdary conditions 
-    if bdaryflags(3) == 0, q(1) = q(1) + tx(1) * pval1; else, q(1) = q(1) - dt*pval1; end
-    if bdaryflags(4) == 0,  q(nx) = q(nx) + tx(nx+1) * pval2; else, q(nx) = q(nx) + dt*pval2; end
-       
+    if bdaryflags(3) == 0, q(1) = q(1) + tx(1) * pval1; else, q(1) = q(1) - dt*pval1 + rhsh(1) ; end
+    if bdaryflags(4) == 0,  q(nx) = q(nx) + tx(nx+1) * pval2; else, q(nx) = q(nx) + dt*pval2 - rhsh(nx+1); end
     %debug
     if ifsave==-1 && ifexact ~=0 %% check with exact solution
         fprintf('bcond\n');
