@@ -152,6 +152,7 @@ mat(nMind,nHind) = stiff_up;
 if ifsave==-1, full(mat), end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  TIME LOOP AND SOLVER
 fcontent = fluid_init(xplot,caseflag);
+
 %% 
 %errvec = [];
 t = t1;
@@ -197,8 +198,8 @@ for n = 1:nt %  time step loop
     q = q - rhshn;
 
     % contributions of [H] FLOW from Dirichlet bdary conditions 
-    if bdaryflags(3) == 0, q(1) = q(1) + tx(1) * pval1; else, q(1) = q(1) - dt*pval1 + rhsh(1) ; end
-    if bdaryflags(4) == 0,  q(nx) = q(nx) + tx(nx+1) * pval2; else, q(nx) = q(nx) + dt*pval2 - rhsh(nx+1); end
+    if bdaryflags(3) == 0, q(1) = q(1) + tx(1) * pval1; else, q(1) = q(1) - dt*pval1 - rhsh(1) ; end
+    if bdaryflags(4) == 0,  q(nx) = q(nx) + tx(nx+1) * pval2; else, q(nx) = q(nx) + dt*pval2 + rhsh(nx+1); end
     %debug
     if ifsave==-1 && ifexact ~=0 %% check with exact solution
         fprintf('bcond\n');

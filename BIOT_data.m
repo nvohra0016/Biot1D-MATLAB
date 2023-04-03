@@ -36,7 +36,7 @@ elseif MYCASEFLAG ==4 %% Example [NV/4]; clay consolidation
 elseif MYCASEFLAG ==5 %% Example [NV/5]; clay-sand consolidation, heterogeneous example
     COF_alpha = 1;
     COF_rhof = 998.21*(1e-6 * (1/3600)*(1/3600)); 
-    COF_G =  1.27290528e8 * 0;
+    COF_G =  1.27290528e8 * 1;
     if exist('x','var')
         COF_c0 = 0*x; COF_c0(x <= 0.5) = 0.3 * 4.16e-4; COF_c0(x > 0.5) = 0.5 * 4.16e-4;
         COF_lambda = 0*x; COF_lambda(x <= 0.5) = 6; COF_lambda(x > 0.5) = 11.538461538461538;
