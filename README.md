@@ -1,5 +1,5 @@
 # 1D Biot's poroelasticity equation solver using MATLAB
-
+Testing...
 Author: Naren Vohra, Malgorzata Peszynska
 
 The 1D poroelasticity code is used to model deformation and flow in fully saturated porous media using the quasi-static Biot's equations. The code is written in MATLAB.
