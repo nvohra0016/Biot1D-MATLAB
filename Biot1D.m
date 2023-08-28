@@ -9,7 +9,7 @@ function   [xfem,usol,xplot,psol]=...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% <bdaryflags> vector of flags for [MMHH], Dirichlet (0) or Neumann (1) flags 
 % (Note: user must code exfun, dexfun to deliver these values)
-%% <caseflag> case study number, drawn from BIOT_data, and hard-coded examples 
+%% <caseflag> case study number, drawn from Biot_data, and hard-coded examples 
 % only caseflag ==4 has NO exact soln known
 %% <ifsave>: flag for saving last time step in a file [->0]
 % ifsave =0: no saving; 
@@ -20,7 +20,7 @@ function   [xfem,usol,xplot,psol]=...
 % ifplot>0, then plot at time steps=multiples of ifplot, and at n=1, n=end 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% GLOBALS and files:
-% MYCASEFLAG, and file BIOT_data;
+% MYCASEFLAG, and file Biot_data;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% EXAMPLES
 % case 1: compute error, 
@@ -33,8 +33,8 @@ function   [xfem,usol,xplot,psol]=...
 %% DEFAULT PLOT PROPERTIES
 set(groot,'defaultLineLineWidth',4)
 set(0,'DefaultaxesLineWidth', 3)
-set(0,'DefaultaxesFontSize', 24)
-set(0,'DefaultTextFontSize', 24)
+set(0,'DefaultaxesFontSize', 20)
+set(0,'DefaultTextFontSize', 20)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% DATA
 global MYCASEFLAG
@@ -43,8 +43,9 @@ MYCASEFLAG = caseflag;
 if (MYCASEFLAG == 1) a=0; b=1; Tend=1; nx=10; dt=0.1; bdaryflags=[0,0,0,0];
 elseif (MYCASEFLAG == 2) a=0; b=1; Tend=1; nx=[0;0.05;0.1;0.15;0.2;0.4;0.6;0.8;0.9;0.95;1.0]; dt=0.1; bdaryflags=[1,0,1,0];
 elseif (MYCASEFLAG == 3) a=0; b=1; Tend=1; nx=20; dt=0.1; bdaryflags=[0,1,1,1];
-elseif (MYCASEFLAG == 4) a=0; b=0.1; Tend=24*3600; nx=20; dt=3600; bdaryflags=[1,0,0,1];
+elseif (MYCASEFLAG == 4) a=0; b=0.1; Tend=86400; nx=20; dt=3600; bdaryflags=[1,0,0,1];
 elseif (MYCASEFLAG == 5) a=0; b=1; Tend=24*3600*360; nx=20; dt=24*3600; bdaryflags=[1,0,0,1];
+else error('Custom example: implement spatial and time domain data.');
 end
 %
 if nargin<5,Tend=1; nx=10; dt=0.1; bdaryflags=[0,0,0,0]; caseflag=1; end
@@ -54,7 +55,7 @@ if nargin<7, ifplot=0; end
 if caseflag<4, ifexact=1; else, ifexact=0; end
 
 %% load physical parameters used in the code
-BIOT_data;
+Biot_data;
 
 %% Grid and data structures 
 %%
@@ -179,7 +180,7 @@ for n = 1:nt %  time step loop
     if ifexact == 0 %% no analytical solution
         if caseflag==4 pval1 = 0; pval2 =0; uval1 = -1e5; uval2 = 0; end
         if caseflag==5 pval1 = 0; pval2 =0; uval1 = -1e5; uval2 = 0; end
-        if caseflag>5 error('Implement boundary conditions for custom example'); end
+        if caseflag>5 error('Custom example: implement boundary conditions'); end
     else  %% known analytical solutions or another case
         if bdaryflags(1)==0, uval1 = u_exfun(xfem(1),t,caseflag); else, uval1 = elcof(1)*u_dexfun(xfem(1),t,caseflag)-COF_alpha*p_exfun(xfem(1),t,caseflag); end
         if bdaryflags(2)==0, uval2 = u_exfun(xfem(end),t,caseflag); else, uval2 = elcof(nx)*u_dexfun(xfem(end),t,caseflag)-COF_alpha*p_exfun(xfem(end),t,caseflag); end
@@ -238,7 +239,7 @@ for n = 1:nt %  time step loop
                 xlabel('x [m]');
                 ylabel('Pressure p [Pa]')
                 xlim([a b]);
-                title(sprintf('t=%g , M=%d , tau=%g , CASE=%d. BDARY=[%g %g %g %g]',t,nx,dt,caseflag,bdaryflags),'FontSize',15);
+                title({['t = ',num2str(t),', nx = ',num2str(nx),', dt = ',num2str(dt)],['CASE = ',num2str(caseflag),', BDARY = [',num2str(bdaryflags(1)),num2str(bdaryflags(2)),num2str(bdaryflags(3)),num2str(bdaryflags(4)),']']},'FontSize',20);
                 box off;
                 % displacement
                 figure(2);
@@ -247,7 +248,7 @@ for n = 1:nt %  time step loop
                 ylabel('Displacement u [m]');
                 xlim([a b]);
                 box off;
-                title(sprintf('t=%g , M=%d , tau=%g , CASE=%d. BDARY=[%g %g %g %g]',t,nx,dt,caseflag,bdaryflags),'FontSize',15);
+                title({['t = ',num2str(t),', nx = ',num2str(nx),', dt = ',num2str(dt)],['CASE = ',num2str(caseflag),', BDARY = [',num2str(bdaryflags(1)),num2str(bdaryflags(2)),num2str(bdaryflags(3)),num2str(bdaryflags(4)),']']},'FontSize',20);
                 pause(0.1);
             end
             pause(.01);
@@ -264,6 +265,7 @@ for n = 1:nt %  time step loop
             xlabel('x [m]');
             ylabel('Pressure p [Pa]')
             xlim([a b]);
+            title({['t = ',num2str(t),', nx = ',num2str(nx),', dt = ',num2str(dt)],['CASE = ',num2str(caseflag),', BDARY = [',num2str(bdaryflags(1)),num2str(bdaryflags(2)),num2str(bdaryflags(3)),num2str(bdaryflags(4)),']']},'FontSize',20);
             box off;
             % displacement
             figure(2);
@@ -277,6 +279,7 @@ for n = 1:nt %  time step loop
             xlabel('x [m]');
             ylabel('Displacement u [m]');
             xlim([a b]);
+            title({['t = ',num2str(t),', nx = ',num2str(nx),', dt = ',num2str(dt)],['CASE = ',num2str(caseflag),', BDARY = [',num2str(bdaryflags(1)),num2str(bdaryflags(2)),num2str(bdaryflags(3)),num2str(bdaryflags(4)),']']},'FontSize',20);
             box off;
             pause(0.1);
         end
@@ -306,29 +309,29 @@ end
 %% Function definitions (permeability, porosity, density elasticity coefficients, initial fluid content)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function v = permfun(x)
-BIOT_data;
+Biot_data;
 v = 0*x + COF_kappa;
 end
 %%
 function v = porfun(x)
-BIOT_data;
+Biot_data;
 v = 0*x + COF_c0;
 end
 %%
 function v = rhorfun(x)
-BIOT_data;
+Biot_data;
 %
 v = 0*x + COF_rhor;
 end
 %%
 function v = elcoffun(x)
-BIOT_data;
+Biot_data;
 %
 v = 0*x + COF_lambda + 2*COF_mu;
 end
 %%
 function v = fluid_init(x,mycase)
-BIOT_data;
+Biot_data;
 %
 if mycase <4
     v = COF_c0*p_exfun(x,0,mycase) + COF_alpha*u_dexfun(x,0,mycase);
@@ -340,7 +343,7 @@ end
 %% Exact solutions for error computation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function u = u_exfun(x,t,mycase)
-BIOT_data;
+Biot_data;
 %
 if mycase ==1
     u = -1/(COF_lambda*pi)*sin(pi*t/2).*cos(pi*x); 
@@ -354,7 +357,7 @@ end
 end
 %%
 function udx = u_dexfun (x,t,mycase)
-BIOT_data;
+Biot_data;
 %
 if mycase ==1
     udx = 1/(COF_lambda)*sin(pi*t/2).*sin(pi*x); 
@@ -368,7 +371,7 @@ end
 end
 %%
 function p = p_exfun(x,t,mycase)
-BIOT_data;
+Biot_data;
 %
 if mycase ==1 
     p = sin(pi*t/2)*sin(pi*x);
@@ -382,7 +385,7 @@ end
 end
 %%
 function pdx = p_dexfun (x,t,mycase)
-BIOT_data;
+Biot_data;
 %
 if mycase ==1
     pdx = pi * sin(pi*t/2) * cos(pi*x);
@@ -399,7 +402,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
 function pfun = p_rhs(x,t,mycase)
-BIOT_data;
+Biot_data;
 %
 if mycase ==1
     pfun = (COF_c0 + COF_alpha/COF_lambda)*pi/2*cos(pi*t/2)*sin(pi*x)+...
@@ -415,7 +418,7 @@ end
 %%
 function ufun = u_rhs(x,t,mycase)
 %
-BIOT_data;
+Biot_data;
 if mycase == 1
     ufun = (-(COF_lambda+2*COF_mu)*pi/COF_lambda + COF_alpha*pi)*sin(pi*t/2).*cos(pi*x); 
 elseif mycase == 2
