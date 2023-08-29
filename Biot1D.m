@@ -43,8 +43,8 @@ MYCASEFLAG = caseflag;
 if (MYCASEFLAG == 1) a=0; b=1; Tend=1; nx=10; dt=0.1; bdaryflags=[0,0,0,0];
 elseif (MYCASEFLAG == 2) a=0; b=1; Tend=1; nx=[0;0.05;0.1;0.15;0.2;0.4;0.6;0.8;0.9;0.95;1.0]; dt=0.1; bdaryflags=[1,0,1,0];
 elseif (MYCASEFLAG == 3) a=0; b=1; Tend=1; nx=20; dt=0.1; bdaryflags=[0,1,1,1];
-elseif (MYCASEFLAG == 4) a=0; b=0.1; Tend=86400; nx=20; dt=3600; bdaryflags=[1,0,0,1];
-elseif (MYCASEFLAG == 5) a=0; b=1; Tend=24*3600*360; nx=20; dt=24*3600; bdaryflags=[1,0,0,1];
+elseif (MYCASEFLAG == 4) a=0; b=0.1; Tend=86400; nx=20; dt=3600; bdaryflags=[1,0,0,1]; if (ifsave < 0) ifsave = 0; end
+elseif (MYCASEFLAG == 5) a=0; b=1; Tend=24*3600*365; nx=20; dt=24*3600; bdaryflags=[1,0,0,1]; if (ifsave < 0) ifsave = 0; end
 else error('Custom example: implement spatial and time domain data.');
 end
 %
@@ -229,7 +229,7 @@ for n = 1:nt %  time step loop
     if ifexact>0,
          pex = p_exfun(xplot,t,caseflag); uex=u_exfun(xfem,t,caseflag);
     end
-    if ifplot>0 && (rem(n,ifplot)==0 || n==1 || t==Tend)
+    if ifplot>0 && (rem(n,ifplot)==-1 || n==1 || t==Tend)
         if ifexact == 0
             fprintf('Time step %d at t = %g\n',n,t);
             if caseflag >=4
@@ -239,7 +239,7 @@ for n = 1:nt %  time step loop
                 xlabel('x [m]');
                 ylabel('Pressure p [Pa]')
                 xlim([a b]);
-                title({['t = ',num2str(t),', nx = ',num2str(nx),', dt = ',num2str(dt)],['CASE = ',num2str(caseflag),', BDARY = [',num2str(bdaryflags(1)),num2str(bdaryflags(2)),num2str(bdaryflags(3)),num2str(bdaryflags(4)),']']},'FontSize',20);
+                title({['t = ',num2str(t),'[s] nx = ',num2str(nx),', dt = ',num2str(dt),'[s]'],['CASE = ',num2str(caseflag),', BDARY = [',num2str(bdaryflags(1)),num2str(bdaryflags(2)),num2str(bdaryflags(3)),num2str(bdaryflags(4)),']']},'FontSize',20);
                 box off;
                 % displacement
                 figure(2);
@@ -248,8 +248,8 @@ for n = 1:nt %  time step loop
                 ylabel('Displacement u [m]');
                 xlim([a b]);
                 box off;
-                title({['t = ',num2str(t),', nx = ',num2str(nx),', dt = ',num2str(dt)],['CASE = ',num2str(caseflag),', BDARY = [',num2str(bdaryflags(1)),num2str(bdaryflags(2)),num2str(bdaryflags(3)),num2str(bdaryflags(4)),']']},'FontSize',20);
-                pause(0.1);
+                title({['t = ',num2str(t),'[s] nx = ',num2str(nx),', dt = ',num2str(dt),'[s]'],['CASE = ',num2str(caseflag),', BDARY = [',num2str(bdaryflags(1)),num2str(bdaryflags(2)),num2str(bdaryflags(3)),num2str(bdaryflags(4)),']']},'FontSize',20);
+                pause;
             end
             pause(.01);
         else
@@ -265,7 +265,7 @@ for n = 1:nt %  time step loop
             xlabel('x [m]');
             ylabel('Pressure p [Pa]')
             xlim([a b]);
-            title({['t = ',num2str(t),', nx = ',num2str(nx),', dt = ',num2str(dt)],['CASE = ',num2str(caseflag),', BDARY = [',num2str(bdaryflags(1)),num2str(bdaryflags(2)),num2str(bdaryflags(3)),num2str(bdaryflags(4)),']']},'FontSize',20);
+            title({['t = ',num2str(t),'[s] nx = ',num2str(nx),', dt = ',num2str(dt),'[s]'],['CASE = ',num2str(caseflag),', BDARY = [',num2str(bdaryflags(1)),num2str(bdaryflags(2)),num2str(bdaryflags(3)),num2str(bdaryflags(4)),']']},'FontSize',20);
             box off;
             % displacement
             figure(2);
@@ -279,7 +279,7 @@ for n = 1:nt %  time step loop
             xlabel('x [m]');
             ylabel('Displacement u [m]');
             xlim([a b]);
-            title({['t = ',num2str(t),', nx = ',num2str(nx),', dt = ',num2str(dt)],['CASE = ',num2str(caseflag),', BDARY = [',num2str(bdaryflags(1)),num2str(bdaryflags(2)),num2str(bdaryflags(3)),num2str(bdaryflags(4)),']']},'FontSize',20);
+            title({['t = ',num2str(t),'[s] nx = ',num2str(nx),', dt = ',num2str(dt),'[s]'],['CASE = ',num2str(caseflag),', BDARY = [',num2str(bdaryflags(1)),num2str(bdaryflags(2)),num2str(bdaryflags(3)),num2str(bdaryflags(4)),']']},'FontSize',20);
             box off;
             pause(0.1);
         end
